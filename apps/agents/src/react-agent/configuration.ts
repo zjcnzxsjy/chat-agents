@@ -1,0 +1,140 @@
+/**
+ * Define the configurable parameters for the agent.
+ */
+import "@langchain/langgraph/zod";
+import { Annotation } from "@langchain/langgraph";
+import { z } from "zod";
+import { SYSTEM_PROMPT_TEMPLATE } from "./prompts.js";
+import { RunnableConfig } from "@langchain/core/runnables";
+import { MCPServersConfig } from "./tools.js";
+
+const parseMCPConfig = (config: string): MCPServersConfig => {
+  try {
+    const prasedCpnfig =  JSON.parse(config);
+    for (const [key, value] of Object.entries(prasedCpnfig)) {
+      if (typeof value === "object" && value !== null && "env" in value) {
+        (value as { env: any }).env.PATH = process.env.PATH!;
+      }
+    }
+    return prasedCpnfig
+  } catch (error) {
+    console.error('Error parsing MCP config', error);
+    return {};
+  }
+}
+
+export const ConfigurationSchema = Annotation.Root({
+  /**
+   * The system prompt to be used by the agent.
+   */
+  systemPrompt: Annotation<string>,
+
+  /**
+   * The name of the language model to be used by the agent.
+   */
+  model: Annotation<string>,
+
+  /**
+   * The configuration for the MCP servers.
+   */
+  mcpServersConfig: Annotation<MCPServersConfig>,
+  temperature: Annotation<number>,
+  maxTokens: Annotation<number>,
+});
+
+export const GraphConfiguration = z.object({
+  model: z
+    .string()
+    .optional()
+    .langgraph.metadata({
+      x_oap_ui_config: {
+        type: "select",
+        default: "ollama/qwen2.5:7b",
+        description: "The model to use in all generations",
+        options: [
+          {
+            label: "Qwen2.5 7B",
+            value: "ollama/qwen2.5:7b",
+          },
+          {
+            label: "Qwen3 8B",
+            value: "ollama/qwen3:8b",
+          },
+          {
+            label: "Mistral Large",
+            value: "mistralai/mistral-large-latest",
+          },
+          {
+            label: "Google Gemini 1.5 Pro",
+            value: "google-vertexai/gemini-1.5-pro",
+          },
+          {
+            label: "OpenAI GPT-4o-mini",
+            value: "openai/gpt-4o-mini",
+          },
+          {
+            label: "DeepSeek Chat",
+            value: "deepseek/deepseek-chat",
+          }
+        ]
+      }
+    }),
+  temperature: z
+    .number()
+    .optional()
+    .langgraph.metadata({
+      x_oap_ui_config: {
+        type: "slider",
+        default: 0.5,
+        min: 0,
+        max: 2,
+        step: 0.1,
+        description: "Controls randomness (0 = deterministic, 2 = creative)",
+      }
+    }),
+  maxTokens: z
+    .number()
+    .optional()
+    .langgraph.metadata({
+      x_oap_ui_config: {
+        type: "number",
+        default: 4000,
+        min: 1,
+        description: "The maximum number of tokens to generate",
+      }
+    }),
+    systemPrompt: z
+      .string()
+      .optional()
+      .langgraph.metadata({
+        x_oap_ui_config: {
+          type: "textarea",
+          placeholder: "Enter a system prompt...",
+          description: "The system prompt to use in all generations",
+        }
+      }),
+    mcpServersConfig: z
+      .string()
+      .optional()
+      .langgraph.metadata({
+        x_oap_ui_config: {
+          type: "json",
+        }
+      })
+})
+
+export function ensureConfiguration(
+  config: RunnableConfig,
+): typeof ConfigurationSchema.State {
+  /**
+   * Ensure the defaults are populated.
+   */
+  const configurable = config.configurable ?? {};
+  return {
+    systemPrompt: configurable.systemPrompt ?? SYSTEM_PROMPT_TEMPLATE,
+    model: configurable.model ?? "ollama/qwen2.5:7b",
+    mcpServersConfig: parseMCPConfig(configurable.mcpServersConfig),
+    temperature: configurable.temperature ?? 0.7,
+    maxTokens: configurable.maxTokens ?? 4000,
+  };
+}
