@@ -10,13 +10,31 @@ import { MCPServersConfig } from "./tools.js";
 
 const parseMCPConfig = (config: string): MCPServersConfig => {
   try {
-    const prasedCpnfig =  JSON.parse(config);
-    for (const [key, value] of Object.entries(prasedCpnfig)) {
-      if (typeof value === "object" && value !== null && "env" in value) {
-        (value as { env: any }).env.PATH = process.env.PATH!;
-      }
+    const jsonedConfig =  JSON.parse(config);
+    if (!Array.isArray(jsonedConfig) || !jsonedConfig.length) {
+      return {};
     }
-    return prasedCpnfig
+    const parsedConfig = jsonedConfig.reduce((acc, cur) => {
+      if (cur.transport === 'sse') {
+        acc[cur.name] = {
+          url: cur.url,
+          transport: 'sse',
+        }
+      } else {
+        acc[cur.name] = {
+          command: cur.command,
+          args: cur.args,
+          transport: 'stdio',
+          env: {
+            ...cur.env,
+            PATH: process.env.PATH!,
+          },
+        }
+      }
+      return acc;
+    }, {} as MCPServersConfig);
+    console.log('parsedConfig', parsedConfig)
+    return parsedConfig
   } catch (error) {
     console.error('Error parsing MCP config', error);
     return {};
@@ -118,7 +136,7 @@ export const GraphConfiguration = z.object({
       .optional()
       .langgraph.metadata({
         x_oap_ui_config: {
-          type: "json",
+          type: "mcp"
         }
       })
 })

@@ -123,6 +123,29 @@ export function configSchemaToConfigurableTools(
   return fields;
 }
 
+export function configSchemaToConfigurableMCP(
+  schema: GraphSchema["config_schema"],
+): ConfigurableFieldMCPMetadata[] {
+  if (!schema || !schema.properties) {
+    return [];
+  }
+
+  const fields: ConfigurableFieldMCPMetadata[] = [];
+  for (const [key, value] of Object.entries(schema.properties)) {
+    const uiConfig = getUiConfig(value);
+    if (!uiConfig || uiConfig.type !== "mcp") {
+      continue;
+    }
+
+    fields.push({
+      label: key,
+      type: uiConfig.type,
+      default: [],
+    });
+  }
+  return fields;
+}
+
 export function configSchemaToRagConfig(
   schema: GraphSchema["config_schema"],
 ): ConfigurableFieldRAGMetadata | undefined {
@@ -173,6 +196,7 @@ export function configSchemaToAgentsConfig(
 
 type ExtractedConfigs = {
   configFields: ConfigurableFieldUIMetadata[];
+  mcpConfig: ConfigurableFieldMCPMetadata[];
   toolConfig: ConfigurableFieldMCPMetadata[];
   ragConfig: ConfigurableFieldRAGMetadata[];
   agentsConfig: ConfigurableFieldAgentsMetadata[];
@@ -186,6 +210,7 @@ export function extractConfigurationsFromAgent({
   schema: GraphSchema["config_schema"];
 }): ExtractedConfigs {
   const configFields = configSchemaToConfigurableFields(schema);
+  const mcpConfig = configSchemaToConfigurableMCP(schema);
   const toolConfig = configSchemaToConfigurableTools(schema);
   const ragConfig = configSchemaToRagConfig(schema);
   const agentsConfig = configSchemaToAgentsConfig(schema);
@@ -200,6 +225,15 @@ export function extractConfigurationsFromAgent({
 
   const configurable =
     agent.config?.configurable ?? ({} as Record<string, any>);
+
+  const configMcpWithDefaults = mcpConfig.map((f) => {
+    const defaultConfig = (configurable[f.label] ??
+      f.default) as ConfigurableFieldMCPMetadata["default"];
+    return {
+      ...f,
+      default: defaultConfig,
+    };
+  })
 
   const configToolsWithDefaults = toolConfig.map((f) => {
     const defaultConfig = (configurable[f.label] ??
@@ -243,6 +277,7 @@ export function extractConfigurationsFromAgent({
 
   return {
     configFields: configFieldsWithDefaults,
+    mcpConfig: configMcpWithDefaults,
     toolConfig: configToolsWithDefaults,
     ragConfig: configRagWithDefaults ? [configRagWithDefaults] : [],
     agentsConfig: configurableAgentsWithDefaults
@@ -253,6 +288,7 @@ export function extractConfigurationsFromAgent({
 
 export function getConfigurableDefaults(
   configFields: ConfigurableFieldUIMetadata[],
+  mcpConfig: ConfigurableFieldMCPMetadata[],
   toolConfig: ConfigurableFieldMCPMetadata[],
   ragConfig: ConfigurableFieldRAGMetadata[],
   agentsConfig: ConfigurableFieldAgentsMetadata[],
@@ -261,6 +297,9 @@ export function getConfigurableDefaults(
   configFields.forEach((field) => {
     defaults[field.label] = field.default;
   });
+  mcpConfig.forEach((field) => {
+    defaults[field.label] = field.default;
+  })
   toolConfig.forEach((field) => {
     defaults[field.label] = field.default;
   });

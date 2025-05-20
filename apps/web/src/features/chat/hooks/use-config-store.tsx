@@ -33,11 +33,13 @@ export const useConfigStore = create<ConfigState>()(
       getAgentConfig: (agentId: string) => {
         const state = get();
         const baseConfig = state.configsByAgentId[agentId];
+        const mcpConfig = state.configsByAgentId[`${agentId}:mcp`];
         const toolsConfig = state.configsByAgentId[`${agentId}:selected-tools`];
         const ragConfig = state.configsByAgentId[`${agentId}:rag`];
         const agentsConfig = state.configsByAgentId[`${agentId}:agents`];
         return {
           ...baseConfig,
+          mcpServersConfig: JSON.stringify(mcpConfig.mcpServersConfig),
           ...toolsConfig,
           ...ragConfig,
           ...agentsConfig,
@@ -45,15 +47,18 @@ export const useConfigStore = create<ConfigState>()(
       },
 
       updateConfig: (agentId, key, value) =>
-        set((state) => ({
-          configsByAgentId: {
-            ...state.configsByAgentId,
-            [agentId]: {
-              ...(state.configsByAgentId[agentId] || {}),
-              [key]: value,
+        set((state) => {
+          console.log('state444', state, key, value)
+          return {
+            configsByAgentId: {
+              ...state.configsByAgentId,
+              [agentId]: {
+                ...(state.configsByAgentId[agentId] || {}),
+                [key]: value,
+              },
             },
-          },
-        })),
+          }
+        }),
 
       resetConfig: (agentId) => {
         set((state) => {

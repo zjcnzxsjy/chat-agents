@@ -26,6 +26,11 @@ const data = {
       url: "/agents",
       icon: Bot,
     },
+    {
+      title: "MCPs",
+      url: "/mcps",
+      icon: Wrench,
+    },
     // {
     //   title: "Tools",
     //   url: "/tools",

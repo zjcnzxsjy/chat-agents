@@ -9,6 +9,7 @@ import { useAgents } from "./use-agents";
 import {
   configSchemaToAgentsConfig,
   configSchemaToConfigurableFields,
+  configSchemaToConfigurableMCP,
   configSchemaToConfigurableTools,
   configSchemaToRagConfig,
   extractConfigurationsFromAgent,
@@ -26,6 +27,9 @@ export function useAgentConfig() {
 
   const [configurations, setConfigurations] = useState<
     ConfigurableFieldUIMetadata[]
+  >([]);
+  const [mcpConfigurations, setMcpConfigurations] = useState<
+    ConfigurableFieldMCPMetadata[]
   >([]);
   const [toolConfigurations, setToolConfigurations] = useState<
     ConfigurableFieldMCPMetadata[]
@@ -74,7 +78,7 @@ export function useAgentConfig() {
       );
       console.log("schema", schema);
       if (!schema) return;
-      const { configFields, toolConfig, ragConfig, agentsConfig } =
+      const { configFields, mcpConfig, toolConfig, ragConfig, agentsConfig } =
         extractConfigurationsFromAgent({
           agent,
           schema,
@@ -83,13 +87,19 @@ export function useAgentConfig() {
       const agentId = agent.assistant_id;
 
       setConfigurations(configFields);
+      setMcpConfigurations(mcpConfig);
       setToolConfigurations(toolConfig);
-
       // Set default config values based on configuration fields
       const { setDefaultConfig } = useConfigStore.getState();
       setDefaultConfig(agentId, configFields);
 
       const supportedConfigs: string[] = [];
+
+      if (mcpConfig.length) {
+        setDefaultConfig(`${agentId}:mcp`, mcpConfig);
+        setMcpConfigurations(mcpConfig);
+        supportedConfigs.push("mcp");
+      }
 
       if (toolConfig.length) {
         setDefaultConfig(`${agentId}:selected-tools`, toolConfig);
@@ -115,6 +125,7 @@ export function useAgentConfig() {
 
       const configurableDefaults = getConfigurableDefaults(
         configFields,
+        mcpConfig,
         toolConfig,
         ragConfig,
         agentsConfig,
@@ -136,6 +147,7 @@ export function useAgentConfig() {
     const agentId = agent.assistant_id;
 
     const configFields = configSchemaToConfigurableFields(schema);
+    const mcpConfig = configSchemaToConfigurableMCP(schema);
     const toolConfig = configSchemaToConfigurableTools(schema);
     const ragConfig = configSchemaToRagConfig(schema);
     const agentsConfig = configSchemaToAgentsConfig(schema);
@@ -144,6 +156,11 @@ export function useAgentConfig() {
 
     const supportedConfigs: string[] = [];
 
+    if (mcpConfig.length) {
+      setDefaultConfig(`${agentId}:mcp`, mcpConfig);
+      setMcpConfigurations(mcpConfig);
+      supportedConfigs.push("mcp");
+    }
     if (toolConfig.length) {
       setDefaultConfig(`${agentId}:selected-tools`, toolConfig);
       setToolConfigurations(toolConfig);
@@ -160,6 +177,7 @@ export function useAgentConfig() {
     }
     const configurableDefaults = getConfigurableDefaults(
       configFields,
+      mcpConfig,
       toolConfig,
       ragConfig ? [ragConfig] : [],
       agentsConfig ? [agentsConfig] : [],
@@ -189,5 +207,7 @@ export function useAgentConfig() {
     setDescription,
     supportedConfigs,
     setSupportedConfigs,
+    mcpConfigurations,
+    setMcpConfigurations,
   };
 }

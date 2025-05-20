@@ -42,6 +42,8 @@ import { AgentsCombobox } from "@/components/ui/agents-combobox";
 import { useAgentsContext } from "@/providers/Agents";
 import { getDeployments } from "@/lib/environment/deployments";
 import { toast } from "sonner";
+import { MCPSSEServerItem, MCPStdioServerItem, ServerConfig } from "@/types/mcp";
+import { useMCPContext } from "@/providers/MCP";
 
 interface Option {
   label: string;
@@ -324,62 +326,46 @@ export function ConfigField({
   );
 }
 
-export function ConfigFieldTool({
+export function ConfigFieldMcp({
   id,
   label,
-  description,
   agentId,
   className,
-  toolId,
-  value: externalValue, // Rename to avoid conflict
-  setValue: externalSetValue, // Rename to avoid conflict
+  mcpId,
 }: Pick<
   ConfigFieldProps,
   | "id"
   | "label"
-  | "description"
   | "agentId"
   | "className"
-  | "value"
-  | "setValue"
-> & { toolId: string }) {
+> & { mcpId: string }) {
+  const { servers } = useMCPContext();
   const store = useConfigStore();
-  const actualAgentId = `${agentId}:selected-tools`;
-
-  const isExternallyManaged = externalSetValue !== undefined;
+  const actualAgentId = `${agentId}:mcp`;
 
   const defaults = (
-    isExternallyManaged
-      ? externalValue
-      : store.configsByAgentId[actualAgentId]?.[toolId]
-  ) as ConfigurableFieldMCPMetadata["default"] | undefined;
-
+    store.configsByAgentId[actualAgentId]?.[mcpId]
+  ) as (MCPSSEServerItem | MCPStdioServerItem)[] | undefined;
+  console.log('defaults', defaults)
   if (!defaults) {
     return null;
   }
 
-  const checked = defaults.tools?.some((t) => t === label);
+  const checked = defaults?.some((t) => t.name === label);
 
   const handleCheckedChange = (checked: boolean) => {
+    const newChecked = servers.find((s) => s.name === label);
     const newValue = checked
-      ? {
+      ? [
           ...defaults,
           // Remove duplicates
-          tools: Array.from(
-            new Set<string>([...(defaults.tools || []), label]),
-          ),
-        }
-      : {
-          ...defaults,
-          tools: defaults.tools?.filter((t) => t !== label),
-        };
+          newChecked,
+        ]
+      : [
+          ...defaults.filter((t) => t.name !== label),
+        ];
 
-    if (isExternallyManaged) {
-      externalSetValue(newValue);
-      return;
-    }
-
-    store.updateConfig(actualAgentId, toolId, newValue);
+    store.updateConfig(actualAgentId, mcpId, newValue);
   };
 
   return (
@@ -397,8 +383,6 @@ export function ConfigFieldTool({
           onCheckedChange={handleCheckedChange}
         />
       </div>
-
-      {description && <p className="text-xs text-gray-500">{description}</p>}
     </div>
   );
 }

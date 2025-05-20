@@ -8,7 +8,7 @@ import {
   ConfigField,
   ConfigFieldAgents,
   ConfigFieldRAG,
-  ConfigFieldTool,
+  ConfigFieldMcp,
 } from "@/features/chat/components/configuration-sidebar/config-field";
 import { ConfigSection } from "@/features/chat/components/configuration-sidebar/config-section";
 import { useConfigStore } from "@/features/chat/hooks/use-config-store";
@@ -44,6 +44,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { isDefaultAssistant } from "@/lib/agent-utils";
+import { useSearchMCPServers } from "@/hooks/use-search-mcp-servers";
 
 function NameAndDescriptionAlertDialog({
   name,
@@ -120,7 +121,7 @@ export const ConfigurationSidebar = forwardRef<
   AIConfigPanelProps
 >(({ className, open }, ref: ForwardedRef<HTMLDivElement>) => {
   const { configsByAgentId, resetConfig } = useConfigStore();
-  const { tools, setTools, getTools, cursor } = useMCPContext();
+  const { servers } = useMCPContext();
   const [agentId] = useQueryState("agentId");
   const [deploymentId] = useQueryState("deploymentId");
   const [threadId] = useQueryState("threadId");
@@ -128,12 +129,14 @@ export const ConfigurationSidebar = forwardRef<
   const {
     getSchemaAndUpdateConfig,
     configurations,
+    mcpConfigurations,
     toolConfigurations,
     ragConfigurations,
     agentsConfigurations,
     loading,
     supportedConfigs,
   } = useAgentConfig();
+  console.log('mcpConfigurations', mcpConfigurations)
   const { updateAgent, createAgent } = useAgents();
 
   const [newName, setNewName] = useState("");
@@ -143,19 +146,8 @@ export const ConfigurationSidebar = forwardRef<
     setOpenNameAndDescriptionAlertDialog,
   ] = useState(false);
 
-  const { toolSearchTerm, debouncedSetSearchTerm, displayTools } =
-    useSearchTools(tools, {
-      preSelectedTools: toolConfigurations[0]?.default?.tools,
-    });
-  const { loadingMore, setLoadingMore } = useFetchPreselectedTools({
-    tools,
-    setTools,
-    getTools,
-    cursor,
-    toolConfigurations,
-    searchTerm: toolSearchTerm,
-  });
-
+  const { mcpSearchTerm, debouncedSetSearchTerm, displayMcpServers } =
+    useSearchMCPServers(servers);
   useEffect(() => {
     if (
       !agentId ||
@@ -281,6 +273,9 @@ export const ConfigurationSidebar = forwardRef<
           >
             <TabsList className="flex-shrink-0 justify-start bg-transparent px-4 pt-2">
               <TabsTrigger value="general">General</TabsTrigger>
+              {supportedConfigs.includes("mcp") && (
+                <TabsTrigger value="mcp">MCP</TabsTrigger>
+              )}
               {supportedConfigs.includes("tools") && (
                 <TabsTrigger value="tools">Tools</TabsTrigger>
               )}
@@ -326,34 +321,33 @@ export const ConfigurationSidebar = forwardRef<
                 </ConfigSection>
               </TabsContent>
 
-              {supportedConfigs.includes("tools") && (
+              {supportedConfigs.includes("mcp") && (
                 <TabsContent
-                  value="tools"
+                  value="mcp"
                   className="m-0 overflow-y-auto p-4"
                 >
-                  <ConfigSection title="Available Tools">
+                  <ConfigSection title="Available MCP Servers">
                     <Search
                       onSearchChange={debouncedSetSearchTerm}
-                      placeholder="Search tools..."
+                      placeholder="Search mcp servers..."
                     />
                     <div className="flex-1 space-y-4 overflow-y-auto rounded-md">
                       {agentId &&
-                        displayTools.length > 0 &&
-                        displayTools.map((c, index) => (
-                          <ConfigFieldTool
+                        displayMcpServers.length > 0 &&
+                        displayMcpServers.map((c, index) => (
+                          <ConfigFieldMcp
                             key={`${c.name}-${index}`}
-                            id={c.name}
+                            id={c.id}
                             label={c.name}
-                            description={c.description}
                             agentId={agentId}
-                            toolId={toolConfigurations[0]?.label}
+                            mcpId={mcpConfigurations[0]?.label}
                           />
                         ))}
                       {agentId &&
-                        displayTools.length === 0 &&
-                        toolSearchTerm && (
+                        displayMcpServers.length === 0 &&
+                        mcpSearchTerm && (
                           <p className="mt-4 text-center text-sm text-slate-500">
-                            No tools found matching "{toolSearchTerm}".
+                            No mcp server found matching "{mcpSearchTerm}".
                           </p>
                         )}
                       {!agentId && (
@@ -361,38 +355,10 @@ export const ConfigurationSidebar = forwardRef<
                           Select an agent to see tools.
                         </p>
                       )}
-                      {agentId && tools.length === 0 && !toolSearchTerm && (
+                      {agentId && servers.length === 0 && !mcpSearchTerm && (
                         <p className="mt-4 text-center text-sm text-slate-500">
-                          No tools available for this agent.
+                          No mcp servers available for this agent.
                         </p>
-                      )}
-                      {cursor && !toolSearchTerm && (
-                        <div className="flex justify-center py-4">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={async () => {
-                              try {
-                                setLoadingMore(true);
-                                const moreTool = await getTools(cursor);
-                                setTools((prevTools) => [
-                                  ...prevTools,
-                                  ...moreTool,
-                                ]);
-                              } catch (error) {
-                                console.error(
-                                  "Failed to load more tools:",
-                                  error,
-                                );
-                              } finally {
-                                setLoadingMore(false);
-                              }
-                            }}
-                            disabled={loadingMore || loading}
-                          >
-                            {loadingMore ? "Loading..." : "Load More Tools"}
-                          </Button>
-                        </div>
                       )}
                     </div>
                   </ConfigSection>

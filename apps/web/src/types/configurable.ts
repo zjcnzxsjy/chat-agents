@@ -1,5 +1,7 @@
 // The type interface for configuration fields
 
+import { MCPServersConfig, MCPSSEServerItem, MCPStdioServerItem, ServerConfig } from "./mcp";
+
 export type ConfigurableFieldUIType =
   | "text"
   | "textarea"
@@ -68,13 +70,19 @@ export type ConfigurableFieldUIMetadata = {
   step?: number;
 };
 
+// export type ConfigurableFieldMCPMetadata = {
+//   label: string;
+//   type: "mcp";
+//   default?: {
+//     tools?: string[];
+//     url?: string;
+//   };
+// };
+
 export type ConfigurableFieldMCPMetadata = {
   label: string;
   type: "mcp";
-  default?: {
-    tools?: string[];
-    url?: string;
-  };
+  default?: (MCPSSEServerItem | MCPStdioServerItem)[]
 };
 
 export type ConfigurableFieldRAGMetadata = {

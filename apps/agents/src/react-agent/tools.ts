@@ -2,7 +2,7 @@ import { StructuredToolInterface } from "@langchain/core/tools";
 import { MultiServerMCPClient } from "@langchain/mcp-adapters";
 import Stream from "node:stream";
 
-export type MCPServersConfig = Record<string, {
+export type MCPStdioServerConfig = {
   command: string;
   args: string[];
   type?: "stdio" | undefined;
@@ -16,7 +16,9 @@ export type MCPServersConfig = Record<string, {
       maxAttempts?: number | undefined;
       delayMs?: number | undefined;
   } | undefined;
-} | ({
+}
+
+export type MCPSSEServerConfig = {
   url: string;
   headers?: Record<string, string> | undefined;
   useNodeEventSource?: boolean | undefined;
@@ -29,7 +31,9 @@ export type MCPServersConfig = Record<string, {
   transport: "sse";
 } | {
   type: "sse";
-}))>
+})
+
+export type MCPServersConfig = Record<string, MCPStdioServerConfig | MCPSSEServerConfig>
 
 export async function getTools(mcpServersConfig: MCPServersConfig): Promise<StructuredToolInterface[]> {
   if (mcpServersConfig && Object.keys(mcpServersConfig).length === 0) {

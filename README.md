@@ -42,4 +42,4 @@ NEXT_PUBLIC_DEPLOYMENTS=[
   }
 ]
 ```
-同样使用指令pnpm install安装依赖，pnpm dev启动web服务，默认地址是https://localhost:3000，注册成功后使用邮箱密码登录（google邮箱登录暂时不可用），登录成功后可以选择设置的agent服务进行对话了。
+同样使用指令pnpm install安装依赖，pnpm dev启动web服务，默认地址是<https://localhost:3000>，注册成功后使用邮箱密码登录（google邮箱登录暂时不可用），登录成功后可以选择设置的agent服务进行对话了。

@@ -61,6 +61,7 @@ export function HumanMessage({
     setIsEditing(false);
 
     const newMessage: Message = { type: "human", content: value };
+    console.log('configurable222', getAgentConfig(agentId))
     thread.submit(
       { messages: [newMessage] },
       {

@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import useMCP from "../hooks/use-mcp";
+import useMCP, { CLIENT_NAME, CLIENT_VERSION } from "../hooks/use-mcp";
 
 type MCPContextType = ReturnType<typeof useMCP> & { loading: boolean };
 
@@ -14,21 +14,26 @@ const MCPContext = createContext<MCPContextType | null>(null);
 
 export const MCPProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const mcpState = useMCP({
-    name: "Tools Interface",
-    version: "1.0.0",
+    name: CLIENT_NAME, version: CLIENT_VERSION
   });
+
   const firstRequestMade = useRef(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (mcpState.tools.length || firstRequestMade.current) return;
+  const init = async () => {
+    if (firstRequestMade.current) return;
 
     firstRequestMade.current = true;
     setLoading(true);
-    mcpState
-      .getTools()
-      .then((tools) => mcpState.setTools(tools))
-      .finally(() => setLoading(false));
+    try {
+      await mcpState.createAndConnectMCPClient();
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    init()
   }, []);
 
   return (
