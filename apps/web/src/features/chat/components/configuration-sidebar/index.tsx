@@ -341,6 +341,7 @@ export const ConfigurationSidebar = forwardRef<
                             label={c.name}
                             agentId={agentId}
                             mcpId={mcpConfigurations[0]?.label}
+                            className="border-b-[1px] py-4"
                           />
                         ))}
                       {agentId &&

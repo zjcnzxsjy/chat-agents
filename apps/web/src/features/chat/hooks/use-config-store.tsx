@@ -39,7 +39,7 @@ export const useConfigStore = create<ConfigState>()(
         const agentsConfig = state.configsByAgentId[`${agentId}:agents`];
         return {
           ...baseConfig,
-          mcpServersConfig: JSON.stringify(mcpConfig.mcpServersConfig),
+          mcpServersConfig: mcpConfig ? JSON.stringify(mcpConfig.mcpServersConfig) : undefined,
           ...toolsConfig,
           ...ragConfig,
           ...agentsConfig,

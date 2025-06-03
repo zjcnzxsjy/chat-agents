@@ -1,10 +1,9 @@
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { Tool } from "@/types/tool";
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { MCPServerStatus, MCPSSEServerItem, MCPStdioServerItem, ServerConfig } from "@/types/mcp";
+import { MCPSSEServerItem, MCPStdioServerItem, ServerConfig } from "@/types/mcp";
 import { useLocalStorage } from "./use-localstorage";
 
 export const CLIENT_NAME = "mcp-client";

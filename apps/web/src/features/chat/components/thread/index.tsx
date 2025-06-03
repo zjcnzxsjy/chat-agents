@@ -138,7 +138,6 @@ export function Thread() {
     };
 
     const toolMessages = ensureToolCallsHaveResponses(stream.messages);
-    console.log('configurable111', getAgentConfig(agentId))
     stream.submit(
       { messages: [...toolMessages, newHumanMessage] },
       {

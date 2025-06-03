@@ -332,19 +332,28 @@ export function ConfigFieldMcp({
   agentId,
   className,
   mcpId,
+  value: externalValue, // Rename to avoid conflict
+  setValue: externalSetValue, 
 }: Pick<
   ConfigFieldProps,
   | "id"
   | "label"
   | "agentId"
   | "className"
+  | "value"
+  | "setValue"
 > & { mcpId: string }) {
   const { servers } = useMCPContext();
   const store = useConfigStore();
   const actualAgentId = `${agentId}:mcp`;
 
+  // Determine whether to use external state or Zustand store
+  const isExternallyManaged = externalSetValue !== undefined;
+
   const defaults = (
-    store.configsByAgentId[actualAgentId]?.[mcpId]
+    isExternallyManaged
+      ? externalValue
+      : store.configsByAgentId[actualAgentId]?.[mcpId]
   ) as (MCPSSEServerItem | MCPStdioServerItem)[] | undefined;
   console.log('defaults', defaults)
   if (!defaults) {
@@ -364,6 +373,10 @@ export function ConfigFieldMcp({
       : [
           ...defaults.filter((t) => t.name !== label),
         ];
+      if (isExternallyManaged) {
+        externalSetValue(newValue);
+        return;
+      }
 
     store.updateConfig(actualAgentId, mcpId, newValue);
   };
@@ -392,7 +405,12 @@ export function ConfigFieldRAG({
   label,
   agentId,
   className,
-}: Pick<ConfigFieldProps, "id" | "label" | "agentId" | "className">) {
+  value: externalValue, // Rename to avoid conflict
+  setValue: externalSetValue,
+}: Pick<
+  ConfigFieldProps,
+  "id" | "label" | "agentId" | "className" | "value" | "setValue"
+>) {
   const { collections } = useRagContext();
   const store = useConfigStore();
   const actualAgentId = `${agentId}:rag`;

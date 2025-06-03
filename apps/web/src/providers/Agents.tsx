@@ -52,6 +52,7 @@ async function getAgents(
       const assistants = await client.assistants.search({
         limit: 100,
       });
+      console.log('assistants', assistants)
       if (
         !assistants.length
       ) {

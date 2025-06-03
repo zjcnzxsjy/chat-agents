@@ -9,7 +9,7 @@ import {
   ConfigField,
   ConfigFieldAgents,
   ConfigFieldRAG,
-  ConfigFieldTool,
+  ConfigFieldMcp,
 } from "@/features/chat/components/configuration-sidebar/config-field";
 import { useSearchTools } from "@/hooks/use-search-tools";
 import { useMCPContext } from "@/providers/MCP";
@@ -21,6 +21,8 @@ import {
 } from "@/types/configurable";
 import _ from "lodash";
 import { useFetchPreselectedTools } from "@/hooks/use-fetch-preselected-tools";
+import { useSearchMCPServers } from "@/hooks/use-search-mcp-servers";
+import { Controller, useFormContext } from "react-hook-form";
 
 export function AgentFieldsFormLoading() {
   return (
@@ -39,46 +41,29 @@ export function AgentFieldsFormLoading() {
 }
 
 interface AgentFieldsFormProps {
-  name: string;
-  setName: (name: string) => void;
-  description: string;
-  setDescription: (description: string) => void;
   configurations: ConfigurableFieldUIMetadata[];
-  toolConfigurations: ConfigurableFieldMCPMetadata[];
-  config: Record<string, any>;
-  setConfig: (config: Record<string, any>) => void;
+  mcpConfigurations: ConfigurableFieldMCPMetadata[];
   agentId: string;
   ragConfigurations: ConfigurableFieldRAGMetadata[];
   agentsConfigurations: ConfigurableFieldAgentsMetadata[];
 }
 
 export function AgentFieldsForm({
-  name,
-  setName,
-  description,
-  setDescription,
   configurations,
-  toolConfigurations,
-  config,
-  setConfig,
+  mcpConfigurations,
   agentId,
   ragConfigurations,
   agentsConfigurations,
 }: AgentFieldsFormProps) {
-  const { tools, setTools, getTools, cursor, loading } = useMCPContext();
-  const { toolSearchTerm, debouncedSetSearchTerm, displayTools } =
-    useSearchTools(tools, {
-      preSelectedTools: toolConfigurations[0]?.default?.tools,
-    });
+  const form = useFormContext<{
+    name: string;
+    description: string;
+    config: Record<string, any>;
+  }>();
 
-  const { loadingMore, setLoadingMore } = useFetchPreselectedTools({
-    tools,
-    setTools,
-    getTools,
-    cursor,
-    toolConfigurations,
-    searchTerm: toolSearchTerm,
-  });
+  const { servers } = useMCPContext();
+  const { mcpSearchTerm, debouncedSetSearchTerm, displayMcpServers } =
+    useSearchMCPServers(servers);
 
   return (
     <div className="flex flex-col gap-8 overflow-y-auto py-4">
@@ -90,8 +75,7 @@ export function AgentFieldsForm({
           </Label>
           <Input
             id="oap_name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            {...form.register("name")}
             placeholder="Emails Agent"
           />
         </div>
@@ -101,8 +85,7 @@ export function AgentFieldsForm({
           </Label>
           <Textarea
             id="oap_description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            {...form.register("description")}
             placeholder="Agent that handles emails"
           />
         </div>
@@ -115,27 +98,35 @@ export function AgentFieldsForm({
               Agent Configuration
             </p>
             {configurations.map((c, index) => (
-              <ConfigField
+              <Controller
                 key={`${c.label}-${index}`}
-                className="w-full"
-                id={c.label}
-                label={c.label}
-                type={c.type === "boolean" ? "switch" : (c.type ?? "text")}
-                description={c.description}
-                placeholder={c.placeholder}
-                options={c.options}
-                min={c.min}
-                max={c.max}
-                step={c.step}
-                value={config[c.label]}
-                setValue={(v) => setConfig({ ...config, [c.label]: v })}
-                agentId={agentId}
+                control={form.control}
+                name={`config.${c.label}`}
+                render={({ field: { value, onChange } }) => (
+                  <ConfigField
+                    className="w-full"
+                    id={c.label}
+                    label={c.label}
+                    type={
+                      c.type === "boolean" ? "switch" : (c.type ?? "text")
+                    }
+                    description={c.description}
+                    placeholder={c.placeholder}
+                    options={c.options}
+                    min={c.min}
+                    max={c.max}
+                    step={c.step}
+                    value={value}
+                    setValue={onChange}
+                    agentId={agentId}
+                  />
+                )}
               />
             ))}
           </div>
         </>
       )}
-      {toolConfigurations.length > 0 && (
+      {mcpConfigurations.length > 0 && (
         <>
           <Separator />
           <div className="flex w-full flex-col items-start justify-start gap-2 space-y-2">
@@ -146,57 +137,36 @@ export function AgentFieldsForm({
               className="w-full"
             />
             <div className="max-h-[500px] w-full flex-1 overflow-y-auto rounded-md border-[1px] border-slate-200 px-4">
-              {toolConfigurations[0]?.label
-                ? displayTools.map((c) => (
-                    <ConfigFieldTool
-                      key={`tool-${c.name}`}
-                      id={c.name}
-                      label={c.name}
-                      description={c.description}
-                      agentId={agentId}
-                      toolId={toolConfigurations[0].label}
-                      className="border-b-[1px] py-4"
-                      value={config[toolConfigurations[0].label]}
-                      setValue={(v) =>
-                        setConfig({
-                          ...config,
-                          [toolConfigurations[0].label]: v,
-                        })
-                      }
+              {mcpConfigurations[0]?.label
+                ? displayMcpServers.map((c, index) => (
+                    <Controller
+                      key={`mcp-${c.name}`}
+                      control={form.control}
+                      name={`config.${mcpConfigurations[0].label}`}
+                      render={({ field: { value, onChange } }) => (
+                        <ConfigFieldMcp
+                          key={`${c.name}-${index}`}
+                          id={c.id}
+                          label={c.name}
+                          agentId={agentId}
+                          mcpId={mcpConfigurations[0]?.label}
+                          className="border-b-[1px] py-4"
+                          value={value}
+                          setValue={onChange}
+                        />
+                      )}
                     />
                   ))
                 : null}
-              {displayTools.length === 0 && toolSearchTerm && (
+              {displayMcpServers.length === 0 && mcpSearchTerm && (
                 <p className="my-4 w-full text-center text-sm text-slate-500">
-                  No tools found matching "{toolSearchTerm}".
+                  No mcp servers found matching "{mcpSearchTerm}".
                 </p>
               )}
-              {tools.length === 0 && !toolSearchTerm && (
+              {servers.length === 0 && !mcpSearchTerm && (
                 <p className="my-4 w-full text-center text-sm text-slate-500">
-                  No tools available for this agent.
+                  No mcp servers available for this agent.
                 </p>
-              )}
-              {cursor && !toolSearchTerm && (
-                <div className="flex justify-center py-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={async () => {
-                      try {
-                        setLoadingMore(true);
-                        const moreTool = await getTools(cursor);
-                        setTools((prevTools) => [...prevTools, ...moreTool]);
-                      } catch (error) {
-                        console.error("Failed to load more tools:", error);
-                      } finally {
-                        setLoadingMore(false);
-                      }
-                    }}
-                    disabled={loadingMore || loading}
-                  >
-                    {loadingMore ? "Loading..." : "Load More Tools"}
-                  </Button>
-                </div>
               )}
             </div>
           </div>
@@ -207,11 +177,18 @@ export function AgentFieldsForm({
           <Separator />
           <div className="flex w-full flex-col items-start justify-start gap-2">
             <p className="text-lg font-semibold tracking-tight">Agent RAG</p>
-            <ConfigFieldRAG
-              id={ragConfigurations[0].label}
-              label={ragConfigurations[0].label}
-              agentId={agentId}
-              // TODO: Start supporting externally managed field.
+            <Controller
+              control={form.control}
+              name={`config.${ragConfigurations[0].label}`}
+              render={({ field: { value, onChange } }) => (
+                <ConfigFieldRAG
+                  id={ragConfigurations[0].label}
+                  label={ragConfigurations[0].label}
+                  agentId={agentId}
+                  value={value}
+                  setValue={onChange}
+                />
+              )}
             />
           </div>
         </>
@@ -223,17 +200,18 @@ export function AgentFieldsForm({
             <p className="text-lg font-semibold tracking-tight">
               Supervisor Agents
             </p>
-            <ConfigFieldAgents
-              id={agentsConfigurations[0].label}
-              label={agentsConfigurations[0].label}
-              agentId={agentId}
-              value={config[agentsConfigurations[0].label]}
-              setValue={(v) =>
-                setConfig({
-                  ...config,
-                  [agentsConfigurations[0].label]: v,
-                })
-              }
+            <Controller
+              control={form.control}
+              name={`config.${agentsConfigurations[0].label}`}
+              render={({ field: { value, onChange } }) => (
+                <ConfigFieldAgents
+                  id={agentsConfigurations[0].label}
+                  label={agentsConfigurations[0].label}
+                  agentId={agentId}
+                  value={value}
+                  setValue={onChange}
+                />
+              )}
             />
           </div>
         </>

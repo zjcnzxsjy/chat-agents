@@ -180,6 +180,7 @@ export function configSchemaToAgentsConfig(
   let agentsField: ConfigurableFieldAgentsMetadata | undefined;
   for (const [key, value] of Object.entries(schema.properties)) {
     const uiConfig = getUiConfig(value);
+    console.log('uiConfig', uiConfig)
     if (!uiConfig || uiConfig.type !== "agents") {
       continue;
     }
@@ -214,6 +215,7 @@ export function extractConfigurationsFromAgent({
   const toolConfig = configSchemaToConfigurableTools(schema);
   const ragConfig = configSchemaToRagConfig(schema);
   const agentsConfig = configSchemaToAgentsConfig(schema);
+  console.log('mcpConfig', mcpConfig)
 
   const configFieldsWithDefaults = configFields.map((f) => {
     const defaultConfig = agent.config?.configurable?.[f.label] ?? f.default;

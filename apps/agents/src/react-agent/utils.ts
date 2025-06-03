@@ -23,7 +23,6 @@ export async function loadChatModel(
       modelProvider: provider,
       temperature: configuration.temperature,
       maxTokens: configuration.maxTokens,
-      ...(provider === "ollama" ? { baseUrl: "http://127.0.0.1:11434" } : {})
     }
 
     return await initChatModel(model, config);

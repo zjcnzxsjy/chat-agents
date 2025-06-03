@@ -148,6 +148,7 @@ export function ensureConfiguration(
    * Ensure the defaults are populated.
    */
   const configurable = config.configurable ?? {};
+  console.log('configurable222', configurable)
   return {
     systemPrompt: configurable.systemPrompt ?? SYSTEM_PROMPT_TEMPLATE,
     model: configurable.model ?? "ollama/qwen2.5:7b",

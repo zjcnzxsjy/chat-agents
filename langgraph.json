@@ -5,7 +5,8 @@
   ],
   "graphs": {
     "agent": "./apps/agents/src/react-agent/graph.ts:graph",
-    "rag_agent": "./apps/agents/src/rag-agent/graph.ts:graph"
+    "rag_agent": "./apps/agents/src/rag-agent/graph.ts:graph",
+    "agent_supervisor": "./apps/agents/src/agent-supervisor/graph.ts:graph"
   },
   "env": ".env"
 }
