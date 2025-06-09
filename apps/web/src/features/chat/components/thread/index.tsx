@@ -78,6 +78,7 @@ export function Thread() {
   const { session } = useAuthContext();
 
   const stream = useStreamContext();
+  console.log("stream", stream);
   const messages = stream.messages;
   const isLoading = stream.isLoading;
 

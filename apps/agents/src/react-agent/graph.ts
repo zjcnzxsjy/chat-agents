@@ -23,7 +23,6 @@ async function callModel(
 ): Promise<typeof MessagesAnnotation.Update> {
   /** Call the LLM powering our agent. **/
   const configuration = ensureConfiguration(config);
-  console.log('configuration', configuration);
   const tools = await getTools(configuration.mcpServersConfig);
 
   // Feel free to customize the prompt, model, and other logic!
@@ -31,7 +30,7 @@ async function callModel(
   if (tools?.length > 0) {
     model.bindTools(tools);
   }
-  console.log('messages111', state.messages);
+
   const response = await model.invoke([
     {
       role: "system",

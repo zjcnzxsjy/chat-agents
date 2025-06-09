@@ -7,6 +7,8 @@ import {
   CopyCheck,
   ChevronLeft,
   ChevronRight,
+  Volume2,
+  AudioLines,
 } from "lucide-react";
 import { TooltipIconButton } from "@/components/ui/tooltip-icon-button";
 import { AnimatePresence, motion } from "framer-motion";

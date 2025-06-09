@@ -48,7 +48,6 @@ export const useConfigStore = create<ConfigState>()(
 
       updateConfig: (agentId, key, value) =>
         set((state) => {
-          console.log('state444', state, key, value)
           return {
             configsByAgentId: {
               ...state.configsByAgentId,

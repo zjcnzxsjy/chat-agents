@@ -215,7 +215,6 @@ export function extractConfigurationsFromAgent({
   const toolConfig = configSchemaToConfigurableTools(schema);
   const ragConfig = configSchemaToRagConfig(schema);
   const agentsConfig = configSchemaToAgentsConfig(schema);
-  console.log('mcpConfig', mcpConfig)
 
   const configFieldsWithDefaults = configFields.map((f) => {
     const defaultConfig = agent.config?.configurable?.[f.label] ?? f.default;

@@ -136,7 +136,6 @@ export const ConfigurationSidebar = forwardRef<
     loading,
     supportedConfigs,
   } = useAgentConfig();
-  console.log('mcpConfigurations', mcpConfigurations)
   const { updateAgent, createAgent } = useAgents();
 
   const [newName, setNewName] = useState("");

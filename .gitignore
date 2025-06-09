@@ -45,3 +45,6 @@ credentials.json
 
 # LangGraph API
 .langgraph_api
+
+# output aduio
+/apps/agents/tts-outputs
