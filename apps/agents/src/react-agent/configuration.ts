@@ -10,6 +10,9 @@ import { MCPServersConfig } from "./tools.js";
 
 const parseMCPConfig = (config: string): MCPServersConfig => {
   try {
+    if (!config) {
+      return {};
+    }
     const jsonedConfig =  JSON.parse(config);
     if (!Array.isArray(jsonedConfig) || !jsonedConfig.length) {
       return {};
@@ -83,8 +86,8 @@ export const GraphConfiguration = z.object({
             value: "mistralai/mistral-large-latest",
           },
           {
-            label: "Google Gemini 1.5 Pro",
-            value: "google-vertexai/gemini-1.5-pro",
+            label: "Google Gemini 2.5 Flash Preview 0520",
+            value: "google-genai/gemini-2.5-flash-preview-05-20",
           },
           {
             label: "OpenAI GPT-4o-mini",

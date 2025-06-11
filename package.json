@@ -28,6 +28,7 @@
   },
   "resolutions": {
     "@langchain/core": "^0.3.42",
+    "undici": "^7.10.0",
     "zod": "^3.24.4"
   },
   "packageManager": "pnpm@10.6.3"
