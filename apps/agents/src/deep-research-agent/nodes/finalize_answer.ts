@@ -15,6 +15,7 @@ export default async function finalizeAnswer(state: typeof OverallState.State, c
       maxRetries: 2,
     }
   ));
+
   const prompt = getFinalizeAnswerInstructions(
     new Date().toISOString(),
     getResearchTopic(state.messages),

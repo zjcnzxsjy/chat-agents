@@ -10,6 +10,7 @@ import { ToolCalls, ToolResult } from "./tool-calls";
 import { MessageContentComplex } from "@langchain/core/messages";
 import { Fragment } from "react/jsx-runtime";
 import { useQueryState, parseAsBoolean } from "nuqs";
+import { ActivityTimeline, ProcessedEvent } from "./activity-time-line";
 
 function CustomComponent({
   message,
@@ -66,10 +67,16 @@ export function AssistantMessage({
   message,
   isLoading,
   handleRegenerate,
+  isLastMessage = false,
+  liveActivity,
+  historicalActivity
 }: {
   message: Message | undefined;
   isLoading: boolean;
   handleRegenerate: (parentCheckpoint: Checkpoint | null | undefined) => void;
+  isLastMessage?: boolean;
+  liveActivity?: ProcessedEvent[];
+  historicalActivity?: ProcessedEvent[];
 }) {
   console.log("message", message);
   const content = message?.content ?? [];
@@ -99,6 +106,10 @@ export function AssistantMessage({
     );
   const hasAnthropicToolCalls = !!anthropicStreamedToolCalls?.length;
   const isToolResult = message?.type === "tool";
+  // Determine which activity events to show and if it's for a live loading message
+  const activityForThisBubble =
+    isLastMessage && isLoading ? liveActivity : historicalActivity;
+  const isLiveActivityForThisBubble = isLastMessage && isLoading;
 
   if (isToolResult && hideToolCalls) {
     return null;
@@ -110,6 +121,15 @@ export function AssistantMessage({
         <ToolResult message={message} />
       ) : (
         <div className="flex flex-col gap-2">
+           {activityForThisBubble && activityForThisBubble.length > 0 && (
+            <div className="mb-3 border-b border-gray-200 pb-3 text-xs">
+              <ActivityTimeline
+                processedEvents={activityForThisBubble}
+                isLoading={isLiveActivityForThisBubble}
+              />
+            </div>
+          )}
+          
           {contentString.length > 0 && (
             <div className="py-1">
               <MarkdownText>{contentString}</MarkdownText>

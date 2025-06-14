@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { isUserSpecifiedDefaultAgent } from "@/lib/agent-utils";
 import { useAuthContext } from "@/providers/Auth";
 import { getDeployments } from "@/lib/environment/deployments";
+import { ProcessedEvent } from "../components/thread/messages/activity-time-line";
 
 export type StateType = { messages: Message[]; ui?: UIMessage[] };
 
@@ -38,7 +39,15 @@ const useTypedStream = useStream<
 >;
 
 type StreamContextType = ReturnType<typeof useTypedStream>;
-const StreamContext = createContext<StreamContextType | undefined>(undefined);
+type ExtendedStreamContextType = StreamContextType & {
+  processedEventsTimeline: ProcessedEvent[];
+  historicalActivities: Record<string, ProcessedEvent[]>;
+  hasFinalizeEventOccurred: boolean;
+  setProcessedEventsTimeline: React.Dispatch<React.SetStateAction<ProcessedEvent[]>>;
+  setHistoricalActivities: React.Dispatch<React.SetStateAction<Record<string, ProcessedEvent[]>>>;
+  setHasFinalizeEventOccurred: React.Dispatch<React.SetStateAction<boolean>>;
+};
+const StreamContext = createContext<ExtendedStreamContextType | undefined>(undefined);
 
 const StreamSession = ({
   children,
@@ -56,6 +65,15 @@ const StreamSession = ({
     throw new Error(`Deployment ${deploymentId} not found`);
   }
   const [threadId, setThreadId] = useQueryState("threadId");
+  const [processedEventsTimeline, setProcessedEventsTimeline] = useState<
+    ProcessedEvent[]
+  >([]);
+  const [historicalActivities, setHistoricalActivities] = useState<
+    Record<string, ProcessedEvent[]>
+  >({});
+
+  const [hasFinalizeEventOccurred, setHasFinalizeEventOccurred] = useState(false);
+
   const streamValue = useTypedStream({
     apiUrl: deployment.deploymentUrl,
     assistantId: agentId,
@@ -69,6 +87,49 @@ const StreamSession = ({
     onThreadId: (id) => {
       setThreadId(id);
     },
+    onUpdateEvent: (event: any) => {
+      let processedEvent: ProcessedEvent | null = null;
+      if (event.generateQuery) {
+        processedEvent = {
+          title: "Generating Search Queries",
+          data: event.generateQuery.queryList.join(", "),
+        };
+      } else if (event.webResearch) {
+        const sources = event.webResearch.sourcesGathered || [];
+        const numSources = sources.length;
+        const uniqueLabels = [
+          ...new Set(sources.map((s: any) => s.label).filter(Boolean)),
+        ];
+        const exampleLabels = uniqueLabels.slice(0, 3).join(", ");
+        processedEvent = {
+          title: "Web Research",
+          data: `Gathered ${numSources} sources. Related to: ${
+            exampleLabels || "N/A"
+          }.`,
+        };
+      } else if (event.reflection) {
+        processedEvent = {
+          title: "Reflection",
+          data: event.reflection.isSufficient
+            ? "Search successful, generating final answer."
+            : `Need more information, searching for ${event.reflection.followUpQueries.join(
+                ", "
+              )}`,
+        };
+      } else if (event.finalizeAnswer) {
+        processedEvent = {
+          title: "Finalizing Answer",
+          data: "Composing and presenting the final answer.",
+        };
+        setHasFinalizeEventOccurred(true)
+      }
+      if (processedEvent) {
+        setProcessedEventsTimeline((prevEvents) => [
+          ...prevEvents,
+          processedEvent!,
+        ]);
+      }
+    },
     defaultHeaders: {
       Authorization: `Bearer ${session?.accessToken}`,
       "x-supabase-access-token": session?.accessToken,
@@ -76,7 +137,15 @@ const StreamSession = ({
   });
 
   return (
-    <StreamContext.Provider value={streamValue}>
+    <StreamContext.Provider value={{
+      ...streamValue,
+      processedEventsTimeline,
+      historicalActivities,
+      hasFinalizeEventOccurred,
+      setProcessedEventsTimeline,
+      setHistoricalActivities,
+      setHasFinalizeEventOccurred
+    }}>
       {children}
     </StreamContext.Provider>
   );
@@ -164,7 +233,7 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
 };
 
 // Create a custom hook to use the context
-export const useStreamContext = (): StreamContextType => {
+export const useStreamContext = (): ExtendedStreamContextType => {
   const context = useContext(StreamContext);
   if (context === undefined) {
     throw new Error("useStreamContext must be used within a StreamProvider");

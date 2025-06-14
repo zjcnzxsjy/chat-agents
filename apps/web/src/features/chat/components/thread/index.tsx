@@ -22,6 +22,7 @@ import { ensureToolCallsHaveResponses } from "@/features/chat/utils/tool-respons
 import { DO_NOT_RENDER_ID_PREFIX } from "@/constants";
 import { useConfigStore } from "../../hooks/use-config-store";
 import { useAuthContext } from "@/providers/Auth";
+import { ProcessedEvent } from "./messages/activity-time-line";
 
 function StickyToBottomContent(props: {
   content: ReactNode;
@@ -78,9 +79,17 @@ export function Thread() {
   const { session } = useAuthContext();
 
   const stream = useStreamContext();
-  console.log("stream", stream);
-  const messages = stream.messages;
-  const isLoading = stream.isLoading;
+
+  const {
+    messages,
+    isLoading,
+    processedEventsTimeline,
+    historicalActivities,
+    hasFinalizeEventOccurred,
+    setProcessedEventsTimeline,
+    setHistoricalActivities,
+    setHasFinalizeEventOccurred
+  } = stream;
 
   const lastError = useRef<string | undefined>(undefined);
 
@@ -120,17 +129,28 @@ export function Thread() {
       messages?.length &&
       messages[messages.length - 1].type === "ai"
     ) {
-      setFirstTokenReceived(true);
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage && lastMessage.type === "ai") {
+        setFirstTokenReceived(true);
+        if (hasFinalizeEventOccurred && processedEventsTimeline.length > 0) {
+          setHistoricalActivities((prev) => ({
+            ...prev,
+            [lastMessage.id!]: [...processedEventsTimeline],
+          }));
+          setHasFinalizeEventOccurred(false);
+        }
+      }
     }
-
     prevMessageLength.current = messages.length;
-  }, [messages]);
+  }, [messages, isLoading, processedEventsTimeline]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
     if (!agentId) return;
     setFirstTokenReceived(false);
+    setProcessedEventsTimeline([]);
+    setHasFinalizeEventOccurred(false);
 
     const newHumanMessage: Message = {
       id: uuidv4(),
@@ -215,6 +235,9 @@ export function Thread() {
                       message={message}
                       isLoading={isLoading}
                       handleRegenerate={handleRegenerate}
+                      isLastMessage={index === messages.length - 1}
+                      liveActivity={processedEventsTimeline}
+                      historicalActivity={historicalActivities[message.id!]}
                     />
                   ),
                 )}

@@ -1,6 +1,9 @@
 import { AIMessage, isAIMessage, isHumanMessage } from "@langchain/core/messages";
 import { OverallState } from "../configuration.js";
 import { GenerateContentResponse, GroundingChunk } from "@google/genai";
+import { RequestAPI } from "../api/index.js";
+import { asyncPool } from "./async_pool.js";
+import { TinyUrlResponse } from "../api/types.js";
 
 export function getResearchTopic(messages: typeof OverallState.State.messages) {
   if (messages.length === 1) {
@@ -17,13 +20,28 @@ export function getResearchTopic(messages: typeof OverallState.State.messages) {
   return researchTopic;
 }
 
-export function resolveUrls(groundingChunks: GroundingChunk[], id: string) {
-  const prefix = "https://vertexaisearch.cloud.google.com/id/"
-  const resolvedMap = new Map<string, string>();
-  for (const [idx, chunk] of groundingChunks.entries()) {
+export async function resolveUrls(groundingChunks: GroundingChunk[], id: string) {
+  const tinyUrlApi = new RequestAPI({
+    apiKey: process.env.TINYURL_API_KEY!,
+    apiHost: "https://api.tinyurl.com"
+  });
+  const originalUrls = groundingChunks.reduce((acc, chunk) => {
     if (chunk.web?.uri) {
-      resolvedMap.set(chunk.web?.uri, `${prefix}${id}-${idx}`)
+      acc.push(chunk.web.uri)
     }
+    return acc;
+  }, [] as string[])
+  const resolvedUrls = await asyncPool(10, originalUrls, async (url) => {
+    const response = await tinyUrlApi.post<{ data: TinyUrlResponse}>('/create', {
+      url,
+      domain: 'tinyurl.com',
+      description: 'string',
+    })
+    return {url, shortUrl: response.data.tiny_url}
+  })
+  const resolvedMap = new Map<string, string>();
+  for (const item of resolvedUrls) {
+    resolvedMap.set(item.url, item.shortUrl)
   }
   return Object.fromEntries(resolvedMap.entries());
 }
@@ -81,6 +99,7 @@ export function insertCitationMarkers(text: string, citations: Record<string, an
     // relative to the parts of the string already processed.
     const endIndex = citation.endIndex;
     let markerToInsert = ''
+
     for (const segment of citation.segments) {
       markerToInsert += ` [${segment['label']}](${segment['shortUrl']})`
     }

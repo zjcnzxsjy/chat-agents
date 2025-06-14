@@ -25,7 +25,6 @@ export default async function reflection(state: typeof OverallState.State, confi
   });
 
   const prompt = getReflectionInstructions(
-    new Date().toISOString(),
     getResearchTopic(state.messages),
     state.webResearchResult.join('\n\n---\n\n')
   )

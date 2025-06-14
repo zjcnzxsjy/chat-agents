@@ -62,7 +62,7 @@ export const ConfigurationSchema = z.object({
         default: "deepseek/deepseek-reasoner",
         description: "推理模型",
         options: [
-          { label: "DeepSeek Chat", value: "deepseek/deepseek-reasoner" },
+          { label: "DeepSeek Reasoner", value: "deepseek/deepseek-reasoner" },
           { label: "Google Gemini 2.5 Flash Preview 0520", value: "google-genai/gemini-2.5-flash-preview-05-20" },
           { label: "Mistral Large", value: "mistralai/mistral-large-latest" },
         ],

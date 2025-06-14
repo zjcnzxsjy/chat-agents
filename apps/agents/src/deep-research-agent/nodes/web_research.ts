@@ -14,8 +14,9 @@ export default async function webResearch(state: typeof WebSearchState.State) {
       temperature: 0,
     },
   });
+
   // resolve the urls to short urls for saving tokens and time
-  const resolvedUrls = resolveUrls(response.candidates?.[0].groundingMetadata?.groundingChunks ?? [], state.id)
+  const resolvedUrls = await resolveUrls(response.candidates?.[0].groundingMetadata?.groundingChunks ?? [], state.id)
   // Gets the citations and adds them to the generated text
   const citations = getCitation(response, resolvedUrls)
   const modifiedText = insertCitationMarkers(response.text ?? '', citations)
