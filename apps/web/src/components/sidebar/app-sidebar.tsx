@@ -46,11 +46,11 @@ const data = {
     //   url: "/inbox",
     //   icon: Inbox,
     // },
-    // {
-    //   title: "RAG",
-    //   url: "/rag",
-    //   icon: Brain,
-    // },
+    {
+      title: "RAG",
+      url: "/rag",
+      icon: Brain,
+    },
   ],
 };
 

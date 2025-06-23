@@ -1,6 +1,6 @@
 export type Collection = {
   name: string;
-  uuid: string;
+  id: string;
   metadata: {
     description?: string;
     [key: string]: any;

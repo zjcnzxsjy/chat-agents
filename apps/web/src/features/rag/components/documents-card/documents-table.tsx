@@ -47,6 +47,7 @@ export function DocumentsTable({
   actionsDisabled,
 }: DocumentsTableProps) {
   const { deleteDocument } = useRagContext();
+  console.log('documents', documents)
   return (
     <Table>
       <TableHeader>
@@ -121,7 +122,7 @@ export function DocumentsTable({
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={async () =>
-                          await deleteDocument(doc.metadata.file_id)
+                          await deleteDocument(doc.metadata.fileId)
                         }
                         className="bg-destructive hover:bg-destructive/90 text-white"
                         disabled={actionsDisabled}

@@ -141,7 +141,18 @@ export const GraphConfiguration = z.object({
         x_oap_ui_config: {
           type: "mcp"
         }
+      }),
+    rag: z
+      .object({
+        rag_url: z.string(),
+        collections: z.array(z.string()),
       })
+      .optional()
+      .langgraph.metadata({
+        x_oap_ui_config: {
+          type: "rag",
+        }
+      }),
 })
 
 export function ensureConfiguration(
