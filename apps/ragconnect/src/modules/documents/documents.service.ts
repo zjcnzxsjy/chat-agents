@@ -43,6 +43,7 @@ export class DocumentsService {
           ...doc,
           metadata: {
             ...doc.metadata,
+            collectionId,
             fileId,
             name,
             size,
@@ -84,7 +85,7 @@ export class DocumentsService {
     return results.map((item) => {
       const [doc, score] = item;
       return {
-        id: doc.id,
+        id: doc.metadata.fileId,
         content: doc.pageContent,
         metadata: doc.metadata,
         score,

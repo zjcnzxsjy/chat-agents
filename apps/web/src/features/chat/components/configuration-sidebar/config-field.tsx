@@ -406,7 +406,7 @@ export function ConfigFieldRAG({
   agentId,
   className,
   value: externalValue, // Rename to avoid conflict
-  setValue: externalSetValue,
+  setValue: externalSetValue, // Rename to avoid conflict
 }: Pick<
   ConfigFieldProps,
   "id" | "label" | "agentId" | "className" | "value" | "setValue"
@@ -416,9 +416,13 @@ export function ConfigFieldRAG({
   const actualAgentId = `${agentId}:rag`;
   const [open, setOpen] = useState(false);
 
-  const defaults = store.configsByAgentId[actualAgentId]?.[
-    label
-  ] as ConfigurableFieldRAGMetadata["default"];
+  const isExternallyManaged = externalSetValue !== undefined;
+
+  const defaults = (
+    isExternallyManaged
+      ? externalValue
+      : store.configsByAgentId[actualAgentId]?.[label]
+  ) as ConfigurableFieldRAGMetadata["default"];
 
   if (!defaults) {
     return null;
@@ -428,14 +432,28 @@ export function ConfigFieldRAG({
     ? defaults.collections
     : [];
 
-  const handleSelect = (collectionName: string) => {
-    const newValue = selectedCollections.some((s) => s === collectionName)
-      ? selectedCollections.filter((s) => s !== collectionName)
-      : [...selectedCollections, collectionName];
+  const handleSelect = (collectionId: string) => {
+    const newValue = selectedCollections.some((s) => s === collectionId)
+      ? selectedCollections.filter((s) => s !== collectionId)
+      : [...selectedCollections, collectionId];
+
+    if (isExternallyManaged) {
+      externalSetValue({
+        ...defaults,
+        collections: Array.from(new Set(newValue)),
+      });
+      return;
+    }
+
     store.updateConfig(actualAgentId, label, {
       ...defaults,
       collections: Array.from(new Set(newValue)),
     });
+  };
+
+  const getCollectionNameFromId = (collectionId: string) => {
+    const collection = collections.find((c) => c.id === collectionId);
+    return collection?.name ?? "Unknown Collection";
   };
 
   return (
@@ -460,12 +478,15 @@ export function ConfigFieldRAG({
             {selectedCollections.length > 0
               ? selectedCollections.length > 1
                 ? `${selectedCollections.length} collections selected`
-                : selectedCollections[0]
+                : getCollectionNameFromId(selectedCollections[0])
               : "Select collections"}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0">
+        <PopoverContent
+          className="w-full p-0"
+          align="start"
+        >
           <Command className="w-full">
             <CommandInput placeholder="Search collections..." />
             <CommandList>
@@ -473,20 +494,22 @@ export function ConfigFieldRAG({
               <CommandGroup>
                 {collections.map((collection) => (
                   <CommandItem
-                    key={collection.uuid}
-                    value={collection.name}
-                    onSelect={() => handleSelect(collection.name)}
+                    key={collection.id}
+                    value={collection.id}
+                    onSelect={() => handleSelect(collection.id)}
                     className="flex items-center justify-between"
                   >
-                    <span>{collection.name}</span>
                     <Check
                       className={cn(
                         "ml-auto h-4 w-4",
-                        selectedCollections.includes(collection.name)
+                        selectedCollections.includes(collection.id)
                           ? "opacity-100"
                           : "opacity-0",
                       )}
                     />
+                    <p className="line-clamp-1 flex-1 truncate pr-2">
+                      {collection.name}
+                    </p>
                   </CommandItem>
                 ))}
               </CommandGroup>

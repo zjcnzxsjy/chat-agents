@@ -1,5 +1,6 @@
 import { initChatModel } from "langchain/chat_models/universal";
 import { ConfigurationSchema } from "./configuration.js";
+import { ChatDeepSeek } from "@langchain/deepseek";
 /**
  * Load a chat model from a fully specified name.
  * @param fullySpecifiedName - String in the format 'provider/model' or 'provider/account/provider/model'.
@@ -7,24 +8,22 @@ import { ConfigurationSchema } from "./configuration.js";
  */
 export async function loadChatModel(
   fullySpecifiedName: string,
-  configuration: typeof ConfigurationSchema.State,
+  configuration: Record<string, any>,
 ): Promise<ReturnType<typeof initChatModel>> {
   const index = fullySpecifiedName.indexOf("/");
+
   if (index === -1) {
     // If there's no "/", assume it's just the model
-    return await initChatModel(fullySpecifiedName, {
-      temperature: configuration.temperature,
-      maxTokens: configuration.maxTokens,
-    });
+    return await initChatModel(fullySpecifiedName, configuration);
   } else {
     const provider = fullySpecifiedName.slice(0, index);
     const model = fullySpecifiedName.slice(index + 1);
     const config = {
+      ...configuration,
       modelProvider: provider,
-      temperature: configuration.temperature,
-      maxTokens: configuration.maxTokens,
     }
 
     return await initChatModel(model, config);
   }
 }
+

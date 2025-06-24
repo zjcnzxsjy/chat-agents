@@ -251,10 +251,15 @@ export function extractConfigurationsFromAgent({
         default: {
           collections:
             (
-              configurable[ragConfig.label] as {
-                collections?: string[];
-              }
-            )?.collections ?? ragConfig.default?.collections,
+              configurable[
+                ragConfig.label
+              ] as ConfigurableFieldRAGMetadata["default"]
+            )?.collections ??
+            ragConfig.default?.collections ??
+            [],
+          rag_url:
+            configurable[ragConfig.label]?.rag_url ??
+            process.env.NEXT_PUBLIC_RAG_API_URL,
         },
       }
     : undefined;

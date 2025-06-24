@@ -11,9 +11,9 @@ export class CollectionsController {
     return this.collectionsService.list();
   }
 
-  @Get(':id')
+  @Get(':collectionId')
   async getCollection(@Param() params: CollectionsReqParamsDto): Promise<CollectionRes | null> {
-    return this.collectionsService.get(params.id);
+    return this.collectionsService.get(params.collectionId);
   }
 
   @Post()
@@ -24,7 +24,7 @@ export class CollectionsController {
 
   @Patch()
   async updateCollection(@Query() query: CollectionsReqParamsDto, @Body() body: CollectionsReqBodyDto) {
-    return this.collectionsService.update(query.id, body);
+    return this.collectionsService.update(query.collectionId, body);
   }
 
   @Delete()

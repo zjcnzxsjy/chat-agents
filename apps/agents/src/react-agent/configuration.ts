@@ -8,6 +8,11 @@ import { SYSTEM_PROMPT_TEMPLATE } from "./prompts.js";
 import { RunnableConfig } from "@langchain/core/runnables";
 import { MCPServersConfig } from "./tools.js";
 
+export type RAGConfig = {
+  rag_url: string;
+  collections: string[];
+}
+
 const parseMCPConfig = (config: string): MCPServersConfig => {
   try {
     if (!config) {
@@ -53,18 +58,19 @@ export const ConfigurationSchema = Annotation.Root({
   /**
    * The name of the language model to be used by the agent.
    */
-  model: Annotation<string>,
+  modelName: Annotation<string>,
 
   /**
    * The configuration for the MCP servers.
    */
   mcpServersConfig: Annotation<MCPServersConfig>,
+  rag: Annotation<RAGConfig>,
   temperature: Annotation<number>,
   maxTokens: Annotation<number>,
 });
 
 export const GraphConfiguration = z.object({
-  model: z
+  modelName: z
     .string()
     .optional()
     .langgraph.metadata({
@@ -162,11 +168,12 @@ export function ensureConfiguration(
    * Ensure the defaults are populated.
    */
   const configurable = config.configurable ?? {};
-  console.log('configurable222', configurable)
+
   return {
     systemPrompt: configurable.systemPrompt ?? SYSTEM_PROMPT_TEMPLATE,
-    model: configurable.model ?? "ollama/qwen2.5:7b",
+    modelName: configurable.modelName ?? "google-genai/gemini-2.5-flash-preview-05-20",
     mcpServersConfig: parseMCPConfig(configurable.mcpServersConfig),
+    rag: configurable.rag,
     temperature: configurable.temperature ?? 0.7,
     maxTokens: configurable.maxTokens ?? 4000,
   };

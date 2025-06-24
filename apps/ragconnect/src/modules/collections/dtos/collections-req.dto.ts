@@ -14,7 +14,7 @@ export class CollectionsReqBodyDto {
 export class CollectionsReqParamsDto {
   @IsNotEmpty({ message: '知识库集合ID不能为空' })
   @IsString()
-  public readonly id: string;
+  public readonly collectionId: string;
 }
 
 export class CollectionsDeteleReqDto {
