@@ -1,9 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
-import * as dotenv from 'dotenv';
-import { initOllamaEmbeddings } from './embeddings';
-
-dotenv.config();
+import { doubaoEmbeddings, initOllamaEmbeddings } from './embeddings';
 
 export const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -11,7 +8,7 @@ export const supabase = createClient(
 );
 
 export function getVectorStore() {
-  const embeddings = initOllamaEmbeddings();
+  const embeddings = doubaoEmbeddings;
   return new SupabaseVectorStore(embeddings, {
     client: supabase,
     tableName: 'documents_embedding',

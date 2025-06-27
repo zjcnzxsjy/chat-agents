@@ -1,9 +1,9 @@
 {
   "name": "chat-agents",
-  "author": "Your Name",
+  "author": "zjcnzxsjy",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"turbo dev --filter=web\" \"turbo dev --filter=agents\"",
+    "dev": "concurrently \"turbo dev --filter=web\" \"turbo dev --filter=agents\" \"turbo dev --filter=ragconnect\"",
     "build": "turbo build",
     "turbo:command": "turbo",
     "format": "turbo format",

@@ -72,7 +72,6 @@ export async function createRAGTools(rag_url: string, collectionId: string, acce
   }
   const collectionEndpoint = new URL(`${finalRagUrl}/api/collections/${collectionId}`);
 
-
   try {
     const response = await fetch(collectionEndpoint, {
       headers: {
@@ -147,6 +146,7 @@ export async function createRAGTools(rag_url: string, collectionId: string, acce
 
     return ragTool;
   } catch (error) {
-
+    console.log('error', error)
+    throw error;
   }
 }

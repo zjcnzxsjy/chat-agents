@@ -221,9 +221,6 @@ importers:
       class-validator:
         specifier: ^0.14.2
         version: 0.14.2
-      dotenv:
-        specifier: ^16.5.0
-        version: 16.5.0
       langchain:
         specifier: ^0.3.19
         version: 0.3.24(@langchain/anthropic@0.3.20(@langchain/core@0.3.53(openai@5.0.2(ws@8.18.2)(zod@3.24.4))))(@langchain/cohere@0.3.3(@langchain/core@0.3.53(openai@5.0.2(ws@8.18.2)(zod@3.24.4))))(@langchain/core@0.3.53(openai@5.0.2(ws@8.18.2)(zod@3.24.4)))(@langchain/deepseek@0.0.1(@langchain/core@0.3.53(openai@5.0.2(ws@8.18.2)(zod@3.24.4)))(ws@8.18.2))(@langchain/google-genai@0.2.10(@langchain/core@0.3.53(openai@5.0.2(ws@8.18.2)(zod@3.24.4)))(zod@3.24.4))(@langchain/google-vertexai@0.2.6(@langchain/core@0.3.53(openai@5.0.2(ws@8.18.2)(zod@3.24.4)))(zod@3.24.4))(@langchain/mistralai@0.2.0(@langchain/core@0.3.53(openai@5.0.2(ws@8.18.2)(zod@3.24.4))))(@langchain/ollama@0.2.0(@langchain/core@0.3.53(openai@5.0.2(ws@8.18.2)(zod@3.24.4))))(axios@1.9.0)(openai@5.0.2(ws@8.18.2)(zod@3.24.4))(ws@8.18.2)
@@ -273,6 +270,9 @@ importers:
       '@types/supertest':
         specifier: ^6.0.2
         version: 6.0.3
+      dotenv-cli:
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.18.0
         version: 9.26.0(jiti@2.4.2)
@@ -4777,6 +4777,14 @@ packages:
   doctrine@2.1.0:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
     engines: {node: '>=0.10.0'}
+
+  dotenv-cli@8.0.0:
+    resolution: {integrity: sha512-aLqYbK7xKOiTMIRf1lDPbI+Y+Ip/wo5k3eyp6ePysVaSqbyxjyK3dK35BTxG+rmd7djf5q2UPs4noPNH+cj0Qw==}
+    hasBin: true
+
+  dotenv-expand@10.0.0:
+    resolution: {integrity: sha512-GopVGCpVS1UKH75VKHGuQFqS1Gusej0z4FyQkPdwjil2gNIv+LNsqBlboOzpJFZKVT95GkCyWJbBSdFEFUWI2A==}
+    engines: {node: '>=12'}
 
   dotenv-expand@12.0.1:
     resolution: {integrity: sha512-LaKRbou8gt0RNID/9RoI+J2rvXsBRPMV7p+ElHlPhcSARbCPDYcYG2s1TIzAfWv4YSgyY5taidWzzs31lNV3yQ==}
@@ -12788,6 +12796,15 @@ snapshots:
   doctrine@2.1.0:
     dependencies:
       esutils: 2.0.3
+
+  dotenv-cli@8.0.0:
+    dependencies:
+      cross-spawn: 7.0.6
+      dotenv: 16.5.0
+      dotenv-expand: 10.0.0
+      minimist: 1.2.8
+
+  dotenv-expand@10.0.0: {}
 
   dotenv-expand@12.0.1:
     dependencies:

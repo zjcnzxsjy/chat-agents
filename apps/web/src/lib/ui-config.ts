@@ -94,32 +94,32 @@ export function configSchemaToConfigurableTools(
   }
 
   const fields: ConfigurableFieldMCPMetadata[] = [];
-  for (const [key, value] of Object.entries(schema.properties)) {
-    const uiConfig = getUiConfig(value);
-    if (!uiConfig || uiConfig.type !== "mcp") {
-      continue;
-    }
+  // for (const [key, value] of Object.entries(schema.properties)) {
+  //   const uiConfig = getUiConfig(value);
+  //   if (!uiConfig || uiConfig.type !== "mcp") {
+  //     continue;
+  //   }
 
-    if (!process.env.NEXT_PUBLIC_MCP_SERVER_URL) {
-      toast.error("Can not configure MCP tool without MCP server URL", {
-        richColors: true,
-      });
-      continue;
-    }
+  //   if (!process.env.NEXT_PUBLIC_MCP_SERVER_URL) {
+  //     toast.error("Can not configure MCP tool without MCP server URL", {
+  //       richColors: true,
+  //     });
+  //     continue;
+  //   }
 
-    const mcpServerUrlObj = new URL(process.env.NEXT_PUBLIC_MCP_SERVER_URL);
-    mcpServerUrlObj.pathname = `${mcpServerUrlObj.pathname}/mcp`;
+  //   const mcpServerUrlObj = new URL(process.env.NEXT_PUBLIC_MCP_SERVER_URL);
+  //   mcpServerUrlObj.pathname = `${mcpServerUrlObj.pathname}/mcp`;
 
-    fields.push({
-      label: key,
-      type: uiConfig.type,
-      default: {
-        url: mcpServerUrlObj.href,
-        tools: [],
-        ...(uiConfig.default ?? {}),
-      },
-    });
-  }
+  //   fields.push({
+  //     label: key,
+  //     type: uiConfig.type,
+  //     default: {
+  //       url: mcpServerUrlObj.href,
+  //       tools: [],
+  //       ...(uiConfig.default ?? {}),
+  //     },
+  //   });
+  // }
   return fields;
 }
 
