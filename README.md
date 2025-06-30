@@ -1,6 +1,6 @@
 # Agent App
 
-本项目基于langchain的Open Agent Plantform实现自定义agent开发，使用Ts/Js开发agent;
+本项目基于langchain的Open Agent Plantform实现自定义agent开发，使用Ts/Js开发agent;内置agent实现原理可以在具体项目的README里查看。
 <video src="https://github.com/user-attachments/assets/f616011f-6fa0-4dc9-ab31-0ba9c574e6d8" controls="controls"></video>
 
 ## 概要
@@ -12,11 +12,11 @@
 - [X] MCP Tools: 支持本地配置和管理MCP servers，在chat中可以使用MCP Tools增强LLM使用工具的能力
 - [X] Audio Agent: 支持与LLM语音对话，可以进行LLM的音色、语速、音量等设置
 - [X] Deep Research Agent: 深度研究
-- [] Agents Manage: 支持不同Agent的交互页面
-- [] Promptpilot: 优化输入提示词能力
+- [ ] Agents Manage: 支持不同Agent的交互页面
+- [ ] Promptpilot: 优化输入提示词能力
 
 ## 快速开始
-可以在根目录下执行pnpm dev,可以自动启动agent、server和web项目
+可以在根目录下执行pnpm dev，自动启动agent、server和web项目
 ### 启动Agent
 首先需要申请要使用的大模型的api key及其他工具依赖的key，本项目也支持ollama的本地大模型，本地模型的弊端是问题响应的速度慢。ollama模型的部署可以网上搜索。复制根目录的.env.example，重命名为.env，填入你申请过的大模型api key。
 ```

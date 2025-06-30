@@ -125,7 +125,7 @@ export async function createRAGTools(rag_url: string, collectionId: string, acce
         // 将文档格式化为 XML 字符串
         let formattedDocs = "<all-documents>\n";
         for (const doc of documents) {
-          const docId = doc.metadata.collectionId || "unknown";
+          const docId = doc.id || "unknown";
           const content = doc.content || "";
           formattedDocs += `  <document id="${docId}">\n    ${content}\n  </document>\n`;
         }

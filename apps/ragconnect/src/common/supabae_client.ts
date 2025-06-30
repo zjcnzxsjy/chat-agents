@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
-import { doubaoEmbeddings, initOllamaEmbeddings } from './embeddings';
+import { doubaoEmbeddings } from './embeddings';
 
 export const supabase = createClient(
   process.env.SUPABASE_URL!,
