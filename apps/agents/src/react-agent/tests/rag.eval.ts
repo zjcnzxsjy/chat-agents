@@ -12,6 +12,7 @@ import { createClient } from "@supabase/supabase-js";
 import 'dotenv/config';
 
 import { graph } from "../graph.js";
+import { SYSTEM_PROMPT_TEMPLATE } from "../prompts.js";
 
 export const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -141,6 +142,18 @@ const targetFunc = async (exampleInput: { question: string }) => {
         content: exampleInput.question
       }
     ]
+  }, {
+    configurable: {
+      temperature: 0,
+      maxTokens: 4000,
+      modelName: "deepseek/deepseek-chat",
+      systemPrompt: SYSTEM_PROMPT_TEMPLATE,
+      mcpServersConfig: undefined,
+      rag: {
+        rag_url: "http://localhost:8080",
+        collections: ["de336cf1-6b11-4e1c-963c-5a8ed6ebda7e"],
+      },
+    }
   })
   
   return {"answer": aiMsg.messages[1].content, "documents": retrievedDocs}

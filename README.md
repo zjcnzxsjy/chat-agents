@@ -1,7 +1,7 @@
 # Agent App
 
 本项目基于langchain的Open Agent Plantform实现自定义agent开发，使用Ts/Js开发agent;内置agent实现原理可以在具体项目的README里查看。
-<video src="https://github.com/user-attachments/assets/f616011f-6fa0-4dc9-ab31-0ba9c574e6d8" controls="controls"></video>
+<video src="https://github.com/user-attachments/assets/55960152-501e-42d4-b746-51dafc6aee01" controls="controls"></video>
 
 ## 概要
 本项目涵盖web、agent、backend server，让开发同学更加容易创建和验证agent效果。

@@ -1,6 +1,6 @@
 import { RunnableConfig } from "@langchain/core/runnables";
 import { MessagesAnnotation, StateGraph } from "@langchain/langgraph";
-import { createReactAgent, ToolNode } from "@langchain/langgraph/prebuilt";
+import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { setGlobalDispatcher, ProxyAgent } from "undici";
 import { GraphConfiguration, ensureConfiguration } from "./configuration.js";
 import { createRAGTools, getTools } from "./tools.js";

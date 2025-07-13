@@ -1,5 +1,5 @@
 import { parsePartialJson } from "@langchain/core/output_parsers";
-import { useStreamContext } from "@/features/chat/providers/Stream";
+import { useStreamContext, VoiceStreamContextType } from "@/features/chat/providers/Stream";
 import { AIMessage, Checkpoint, Message } from "@langchain/langgraph-sdk";
 import { getContentString } from "@/features/chat/utils/content-string";
 import { BranchSwitcher, CommandBar } from "./shared";
@@ -69,7 +69,8 @@ export function AssistantMessage({
   handleRegenerate,
   isLastMessage = false,
   liveActivity,
-  historicalActivity
+  historicalActivity,
+  voiceStream
 }: {
   message: Message | undefined;
   isLoading: boolean;
@@ -77,6 +78,7 @@ export function AssistantMessage({
   isLastMessage?: boolean;
   liveActivity?: ProcessedEvent[];
   historicalActivity?: ProcessedEvent[];
+  voiceStream?: VoiceStreamContextType
 }) {
   console.log("message", message);
   const content = message?.content ?? [];
@@ -183,6 +185,7 @@ export function AssistantMessage({
               content={contentString}
               isLoading={isLoading}
               isAiMessage={true}
+              voiceStream={voiceStream}
               handleRegenerate={() => handleRegenerate(parentCheckpoint)}
             />
           </div>

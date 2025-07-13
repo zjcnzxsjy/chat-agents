@@ -3,12 +3,14 @@ import { GraphConfiguration, SpeechAnnotation } from "./configuration.js";
 import { speechToText } from "./nodes/speech_to_text.js";
 import { reactAgent } from "./nodes/react_agent.js";
 import { textToSpeech } from "./nodes/text_to_speech.js";
+import { coordinator } from "./nodes/coordinator.js";
 
 const workflow = new StateGraph(SpeechAnnotation, GraphConfiguration)
+  .addNode("coordinator", coordinator, {ends: ["speechToText", "reactAgent"]})
   .addNode("speechToText", speechToText)
   .addNode("reactAgent", reactAgent)
   .addNode("textToSpeech", textToSpeech)
-  .addEdge(START, "speechToText")
+  .addEdge(START, "coordinator")
   .addEdge("speechToText", "reactAgent")
   .addEdge("reactAgent", "textToSpeech")
   .addEdge("textToSpeech", END)

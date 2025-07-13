@@ -180,7 +180,6 @@ export function configSchemaToAgentsConfig(
   let agentsField: ConfigurableFieldAgentsMetadata | undefined;
   for (const [key, value] of Object.entries(schema.properties)) {
     const uiConfig = getUiConfig(value);
-    console.log('uiConfig', uiConfig)
     if (!uiConfig || uiConfig.type !== "agents") {
       continue;
     }

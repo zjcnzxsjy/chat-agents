@@ -395,7 +395,9 @@ export default function VoiceInterface(): React.ReactNode {
       let audioUrl: string;
       
       try {
+        console.log("base64Audio", base64Audio);
         binaryString = atob(base64Audio);
+        console.log("binaryString", binaryString);
       } catch (decodeError) {
         console.error('🎵 Base64 decode failed:', decodeError);
         throw new Error('Invalid base64 audio format');
@@ -489,7 +491,7 @@ export default function VoiceInterface(): React.ReactNode {
       
       // Set the source and attempt to play
       audio.src = audioUrl;
-      console.log('🎵 Attempting to play base64 audio...');
+      console.log(`🎵 Attempting to play base64 audio ${audioUrl}`);
       await audio.play();
       console.log('🎵 Base64 audio play() succeeded');
       toast.success("Playing response");

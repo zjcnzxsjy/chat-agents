@@ -24,6 +24,7 @@ import { isUserSpecifiedDefaultAgent } from "@/lib/agent-utils";
 import { useAuthContext } from "@/providers/Auth";
 import { getDeployments } from "@/lib/environment/deployments";
 import { ProcessedEvent } from "../components/thread/messages/activity-time-line";
+import { Agent } from "@/types/agent";
 
 export type StateType = { messages: Message[]; ui?: UIMessage[] };
 
@@ -38,7 +39,27 @@ const useTypedStream = useStream<
   }
 >;
 
+export interface TTSOutput {
+  audioData: string; // base64 encoded audio data
+  mimeType: string;
+  size: number;
+}
+
+export type VoiceStateType = { 
+  researchText: string;
+  ttsOutput?: TTSOutput;
+};
+
+const useVoiceStream = useStream<
+  VoiceStateType,
+  {
+    UpdateType: VoiceStateType;
+  }
+>;
+
 type StreamContextType = ReturnType<typeof useTypedStream>;
+export type VoiceStreamContextType = ReturnType<typeof useVoiceStream>;
+
 type ExtendedStreamContextType = StreamContextType & {
   processedEventsTimeline: ProcessedEvent[];
   historicalActivities: Record<string, ProcessedEvent[]>;
@@ -46,6 +67,7 @@ type ExtendedStreamContextType = StreamContextType & {
   setProcessedEventsTimeline: React.Dispatch<React.SetStateAction<ProcessedEvent[]>>;
   setHistoricalActivities: React.Dispatch<React.SetStateAction<Record<string, ProcessedEvent[]>>>;
   setHasFinalizeEventOccurred: React.Dispatch<React.SetStateAction<boolean>>;
+  voiceStream: VoiceStreamContextType;
 };
 const StreamContext = createContext<ExtendedStreamContextType | undefined>(undefined);
 
@@ -53,10 +75,12 @@ const StreamSession = ({
   children,
   agentId,
   deploymentId,
+  audioAgentId,
 }: {
   children: ReactNode;
   agentId: string;
   deploymentId: string;
+  audioAgentId: string;
 }) => {
   const { session } = useAuthContext();
 
@@ -136,6 +160,16 @@ const StreamSession = ({
     },
   });
 
+  const voiceStream = useVoiceStream({
+    apiUrl: deployment.deploymentUrl,
+    assistantId: audioAgentId,
+    threadId: null,
+    defaultHeaders: {
+      Authorization: `Bearer ${session?.accessToken}`,
+      "x-supabase-access-token": session?.accessToken,
+    },
+  })
+
   return (
     <StreamContext.Provider value={{
       ...streamValue,
@@ -144,7 +178,8 @@ const StreamSession = ({
       hasFinalizeEventOccurred,
       setProcessedEventsTimeline,
       setHistoricalActivities,
-      setHasFinalizeEventOccurred
+      setHasFinalizeEventOccurred,
+      voiceStream
     }}>
       {children}
     </StreamContext.Provider>
@@ -156,6 +191,7 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const { agents, loading } = useAgentsContext();
   const [agentId, setAgentId] = useQueryState("agentId");
+  const [audioAgentId, setAudioAgentId] = useQueryState("audioAgentId");
   const [deploymentId, setDeploymentId] = useQueryState("deploymentId");
   const [value, setValue] = useState("");
   const [open, setOpen] = useState(false);
@@ -168,6 +204,8 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
     if (defaultAgent) {
       setValue(`${defaultAgent.assistant_id}:${defaultAgent.deploymentId}`);
     }
+    const audioAgent = agents.find((agent) => agent.name === "podcast_agent");
+    setAudioAgentId(audioAgent!.assistant_id);
   }, [agents]);
 
   const handleValueChange = (v: string) => {
@@ -226,6 +264,7 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
     <StreamSession
       agentId={agentId}
       deploymentId={deploymentId}
+      audioAgentId={audioAgentId!}
     >
       {children}
     </StreamSession>

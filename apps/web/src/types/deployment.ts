@@ -25,4 +25,9 @@ export interface Deployment {
    * The ID of the primary graph for this deployment.
    */
   primaryGraphId: string;
+  /**
+   * The ID of the default graph for this deployment. This should only be set for one deployment,
+   * and it should be the same deployment that isDefault is set to true on.
+   */
+  defaultGraphId?: string;
 }

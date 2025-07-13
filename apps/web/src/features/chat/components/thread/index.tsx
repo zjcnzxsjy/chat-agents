@@ -88,7 +88,8 @@ export function Thread() {
     hasFinalizeEventOccurred,
     setProcessedEventsTimeline,
     setHistoricalActivities,
-    setHasFinalizeEventOccurred
+    setHasFinalizeEventOccurred,
+    voiceStream
   } = stream;
 
   const lastError = useRef<string | undefined>(undefined);
@@ -238,6 +239,7 @@ export function Thread() {
                       isLastMessage={index === messages.length - 1}
                       liveActivity={processedEventsTimeline}
                       historicalActivity={historicalActivities[message.id!]}
+                      voiceStream={voiceStream}
                     />
                   ),
                 )}
