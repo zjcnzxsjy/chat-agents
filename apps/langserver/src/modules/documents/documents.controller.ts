@@ -4,11 +4,8 @@ import {
   Body,
   Controller,
   Delete,
-  FileTypeValidator,
   Get,
   Injectable,
-  MaxFileSizeValidator,
-  ParseFilePipe,
   PipeTransform,
   Post,
   Query,
@@ -26,26 +23,6 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Injectable()
-export class TrimMimetypePipe implements PipeTransform {
-  transform(files: Array<Express.Multer.File>, metadata: ArgumentMetadata): Array<Express.Multer.File> {
-    // 如果没有文件或不是数组，直接返回
-    console.log('files', files);
-    if (!files || !Array.isArray(files)) {
-      return files;
-    }
-
-    // 遍历数组，对每个文件的 mimetype 进行 trim
-    files.forEach(file => {
-      if (file && file.mimetype) {
-        file.mimetype = file.mimetype.trim();
-      }
-    });
-
-    return files;
-  }
-}
-
-@Injectable()
 export class CustomFileValidationPipe implements PipeTransform {
   async transform(files: Array<Express.Multer.File>, metadata: ArgumentMetadata): Promise<Array<Express.Multer.File>> {
     // 1. 处理 fileIsRequired: false 的情况
@@ -54,7 +31,7 @@ export class CustomFileValidationPipe implements PipeTransform {
     }
 
     // 2. 定义验证规则
-    const maxSize = 10 * 1024 * 1024; // 10 MB
+    const maxSize = 100 * 1024 * 1024; // 100 MB
     const allowedMimeTypes = /^(application\/pdf|text\/plain)$/;
 
     // 3. 遍历并验证每个文件
@@ -95,14 +72,6 @@ export class DocumentsController {
   @UseInterceptors(FilesInterceptor('files'))
   async createDocument(
     @UploadedFiles(
-      // TrimMimetypePipe,
-      // new ParseFilePipe({
-      //   validators: [
-      //     new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 10 }),
-      //     new FileTypeValidator({ fileType: new RegExp('^(application\\/pdf|text\\/plain)$') }),
-      //   ],
-      //   // fileIsRequired: false,
-      // })
       new CustomFileValidationPipe()
     )
     files: Array<Express.Multer.File>,

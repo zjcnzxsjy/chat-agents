@@ -1,98 +1,61 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+#Lang Server
+可以为agent提供知识图谱能力，本项目选择supabase作为数据库。知识范围权限还在设计中
+<img width="643" height="792" alt="Image" src="https://github.com/user-attachments/assets/ec3b5eec-862b-4fb9-85a6-c429e03a7a70" />
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Collections
+创建一个类别的知识库集合，在chat agent可以选择知识库，提高LLM在问答时的准确率及减少幻觉
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+### SQL Table
+```SQL
+create table rag_collections (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- 唯一键值
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), -- 数据创建时间
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), -- 数据更新时间
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ pnpm install
+  name TEXT NOT NULL, -- 集合名称
+  -- 集合元数据，可以作为扩展使用，
+  -- description: 集合描述
+  metadata JSONB
+);
 ```
 
-## Compile and run the project
+### 接口文档
+| 名称            | 路径                         | 方法 | 入参                                                | 出参                                                                                             | 备注                                                                     |
+| ----------------- | ------------------------------ | ------ | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| 获取全部集合列表  | /api/collections               | GET    | -                                                     | Array[Collection]<br>id: string //集合id<br>name: string //集合名称<br>metadata: json //集合元数据 | content：切割后的文本<br>metadata: 可扩展，含collectionId      |
+| 获取特定集合 | /api/collections/:collectionId | GET    | params<br>collectionId: string                        | Collection<br>id: string //集合id<br>name: string //集合名称<br>metadata: json //集合元数据 | 入参documents是json string，内含文档元信息<br>chunk_id：文本被切割后生成id |
+| 添加集合      | /api/collections               | POST   | body<br>name: string<br>metadata: json                | 同上                                                                                             |                                                                            |
+| 修改集合数据 | /api/collections?collectionId= | PATCH  | query<br>collectionId: string<br>body: metadata: json | 同上                                                                                             | id: 即fileId                                                              |
+| 删除集合数据 | /api/collections?ids=          | DELETE | query<br>ids: string[] 
 
-```bash
-# development
-$ pnpm run start
+## Documents
+知识库集合内的文档
+### SQL
+```SQL
+-- Enable the pgvector extension to work with embedding vectors
+create extension if not exists vector;
 
-# watch mode
-$ pnpm run start:dev
+create table documents_embedding (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- 唯一键值
+  collection_id UUID, -- 集合id，关联rag_collections表
+  content text, -- corresponds to Document.pageContent
+  metadata jsonb, -- corresponds to Document.metadata
+  embedding vector(2048), -- 2048 works for doubao embeddings, change if needed
 
-# production mode
-$ pnpm run start:prod
+  CONSTRAINT fk_collection
+        FOREIGN KEY (collection_id)
+        REFERENCES rag_collections(id)
+        ON DELETE CASCADE
+);
 ```
+### 接口文档
+| 名称   | 路径                           | 方法 | 入参                                                                          | 出参                                                                       | 备注                                                                     |
+| -------- | -------------------------------- | ------ | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| 获取文档 | /api/collection/doucments        | GET    | query<br>collectionId: string<br>limit: number<br>offset: number                | Array[Document]<br>id: string<br>content: string<br>metadata: json           | content：切割后的文本<br>metadata: 可扩展，含collectionId      |
+| 创建文档 | /api/collection/documents        | POST   | Form data<br>files: File[]<br>body<br>collectionId: string<br>documents: string | added_chunk_ids: string[]                                                    | 入参documents是json string，内含文档元信息<br>chunk_id：文本被切割后生成id |
+| 删除文档 | /api/collection/documents        | DELETE | query<br>fileIds: string[]                                                      | -                                                                            |                                                                            |
+| 查询文档 | /api/collection/documents/search | GET    | query<br>collectionId: string<br>query: string<br>limit: number                 | Document<br>id: string<br>content: string<br>metadata: json<br>score: number | id: 即fileId                                                              |
 
-## Run tests
 
-```bash
-# unit tests
-$ pnpm run test
 
-# e2e tests
-$ pnpm run test:e2e
 
-# test coverage
-$ pnpm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
