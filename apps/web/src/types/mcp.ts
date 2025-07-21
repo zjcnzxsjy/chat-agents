@@ -20,16 +20,18 @@ export type MCPSSEServerItem = SSEConfig & {
   id: string;
   name: string;
   client?: any;
-  status: MCPServerStatus;
+  status?: MCPServerStatus;
   error?: any;
+  tools?: string[];
 };
 
 export type MCPStdioServerItem = StdioConfig & {
   id: string;
   name: string;
   client?: any;
-  status: MCPServerStatus;
+  status?: MCPServerStatus;
   error?: any;
+  tools?: string[];
 };
 
 export interface MCPServersConfig {

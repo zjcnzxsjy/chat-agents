@@ -47,7 +47,7 @@ export default function MCPInterface() {
   const [args, setArgs] = useState("");
   const [url, setUrl] = useState("");
   const [env, setEnv] = useState("");
-  // const [isLoading, setIsLoading] = useState(true);
+  const [addLoading, setAddLoading] = useState(false);
   const [showAddServerForm, setShowAddServerForm] = useState(false);
 
   // Calculate server statistics
@@ -76,7 +76,7 @@ export default function MCPInterface() {
     }
   };
 
-  const addConfig = () => {
+  const addConfig = async() => {
     if (!serverName) return;
 
     const newConfig =
@@ -92,7 +92,9 @@ export default function MCPInterface() {
             transport: "sse" as const,
           };
 
-    addServer(serverName, newConfig);
+    setAddLoading(true);
+    await addServer(serverName, newConfig);
+    setAddLoading(false);
 
     // Reset form
     setServerName("");
@@ -239,12 +241,15 @@ export default function MCPInterface() {
                     </button>
                   </div>
                   <div className="mt-3 text-sm text-gray-600">
+                    <p>Tools: {config.tools?.join(" ")}</p>
+                  </div>
+                  <div className="mt-3 text-sm text-gray-600">
                     {config.transport === "stdio" ? (
                       <>
-                        <p>Command: {config.command}</p>
-                        <p className="truncate">
+                        <p>Command: {`${config.command} ${config.args.join(" ")}`}</p>
+                        {/* <p className="truncate">
                           Args: {config.args.join(" ")}
-                        </p>
+                        </p> */}
                       </>
                     ) : (
                       <p className="truncate">URL: {config.url}</p>
@@ -390,7 +395,7 @@ export default function MCPInterface() {
             )}
           </div>
           <DialogFooter>
-            <Button onClick={addConfig}>Add</Button>
+            <Button onClick={addConfig} disabled={addLoading}>{addLoading ? "Adding..." : "Add"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
