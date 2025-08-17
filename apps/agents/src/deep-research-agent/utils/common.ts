@@ -32,12 +32,16 @@ export async function resolveUrls(groundingChunks: GroundingChunk[], id: string)
     return acc;
   }, [] as string[])
   const resolvedUrls = await asyncPool(10, originalUrls, async (url) => {
-    const response = await tinyUrlApi.post<{ data: TinyUrlResponse}>('/create', {
-      url,
-      domain: 'tinyurl.com',
-      description: 'string',
-    })
-    return {url, shortUrl: response.data.tiny_url}
+    try {
+      const response = await tinyUrlApi.post<{ data: TinyUrlResponse}>('/create', {
+        url,
+        domain: 'tinyurl.com',
+        description: 'string',
+      })
+      return {url, shortUrl: response.data.tiny_url}
+    } catch (error) {
+      return {url, shortUrl: url}
+    }
   })
   const resolvedMap = new Map<string, string>();
   for (const item of resolvedUrls) {

@@ -10,19 +10,20 @@ export default function AgentsInterfaceV2() {
       <PageHeader
         title="Agents"
         description="Manage your agents across different templates"
+        action={null}
       />
 
       <Tabs
-        defaultValue="templates"
+        defaultValue="chat-agents"
         className="mt-6"
       >
         <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="templates">Templates</TabsTrigger>
-          <TabsTrigger value="all-agents">All Agents</TabsTrigger>
+          <TabsTrigger value="chat-agents">Chat Agents</TabsTrigger>
+          <TabsTrigger value="advanced-agents">Advanced Agents</TabsTrigger>
         </TabsList>
 
         <TabsContent
-          value="templates"
+          value="chat-agents"
           className="mt-6"
         >
           <Suspense fallback={<p>Loading...</p>}>
@@ -31,7 +32,7 @@ export default function AgentsInterfaceV2() {
         </TabsContent>
 
         <TabsContent
-          value="all-agents"
+          value="advanced-agents"
           className="mt-6"
         >
           <Suspense fallback={<p>Loading...</p>}>

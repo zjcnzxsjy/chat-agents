@@ -10,6 +10,7 @@ import { getDeployments } from "@/lib/environment/deployments";
 import { groupAgentsByGraphs } from "@/lib/agent-utils";
 import { TemplatesLoading } from "./templates-loading";
 import { GraphGroup } from "../../types";
+import { CHAT_AGENTS } from "../../const";
 
 export function TemplatesList() {
   const { agents, loading: agentsLoading } = useAgentsContext();
@@ -47,7 +48,10 @@ export function TemplatesList() {
 
   const filteredGraphGroupsState = useMemo(() => {
     const lowerCaseQuery = searchQueryState.toLowerCase();
-    return allGraphGroups.filter(
+    const chatAgents = allGraphGroups.filter((group) =>
+      CHAT_AGENTS.includes(group.graphId),
+    );
+    return chatAgents.filter(
       (group) =>
         group.graphId.toLowerCase().includes(lowerCaseQuery) ||
         group.agents.some((agent) =>

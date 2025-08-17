@@ -100,7 +100,7 @@ export const ConfigurationSchema = z.object({
     const configurable = config.configurable ?? {};
     return {
       queryGeneratorModel: configurable.queryGeneratorModel ?? "deepseek/deepseek-chat",
-      reasoningModel: configurable.reasoningModel ?? "deepseek/deepseek-reasoner",
+      reasoningModel: configurable.reasoningModel ?? "google-genai/gemini-2.5-flash-preview-05-20",
       numberOfInitialQueries: configurable.numberOfInitialQueries ?? 3,
       maxResearchLoops: configurable.maxResearchLoops ?? 2,
     };

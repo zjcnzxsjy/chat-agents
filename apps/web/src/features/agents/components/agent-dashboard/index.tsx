@@ -4,26 +4,19 @@ import { useMemo, useState } from "react";
 import { Filter, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { AgentCard } from "../agent-card";
+import { TaskAgentCard } from "../task-agent-card";
 import { CreateAgentDialog } from "../create-edit-agent-dialogs/create-agent-dialog";
 import { useAgentsContext } from "@/providers/Agents";
 import { getDeployments } from "@/lib/environment/deployments";
 import { GraphGroup } from "../../types";
 import { groupAgentsByGraphs } from "@/lib/agent-utils";
 import _ from "lodash";
+import { CHAT_AGENTS } from "../../const";
 
 export function AgentDashboard() {
   const { agents, loading: agentsLoading } = useAgentsContext();
   const deployments = getDeployments();
   const [searchQuery, setSearchQuery] = useState("");
-  const [graphFilter, setGraphFilter] = useState<string>("all");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const allGraphGroups: GraphGroup[] = useMemo(() => {
@@ -52,17 +45,9 @@ export function AgentDashboard() {
     // 1. Filter groups based on the graphFilter dropdown
     let groupsMatchingGraphFilter: GraphGroup[];
 
-    if (graphFilter === "all") {
-      groupsMatchingGraphFilter = allGraphGroups;
-    } else {
-      // Parse the combined ID "deploymentId:graphId"
-      const [selectedDeploymentId, selectedGraphId] = graphFilter.split(":");
-      groupsMatchingGraphFilter = allGraphGroups.filter(
-        (group) =>
-          group.deployment.id === selectedDeploymentId &&
-          group.graphId === selectedGraphId,
-      );
-    }
+    groupsMatchingGraphFilter = allGraphGroups.filter(
+      (group) => !CHAT_AGENTS.includes(group.graphId)
+    );
 
     // 2. Get all agents from the groups that matched the graph filter
     const agentsInFilteredGroups = groupsMatchingGraphFilter.flatMap(
@@ -78,7 +63,7 @@ export function AgentDashboard() {
     return agentsInFilteredGroups.filter((agent) =>
       agent.name.toLowerCase().includes(lowerCaseQuery),
     );
-  }, [allGraphGroups, graphFilter, searchQuery]);
+  }, [allGraphGroups, searchQuery]);
 
   return (
     <div className="space-y-6">
@@ -94,36 +79,6 @@ export function AgentDashboard() {
             />
           </div>
         </div>
-
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Filter className="text-muted-foreground h-4 w-4" />
-            <span className="text-sm font-medium">Filters:</span>
-          </div>
-
-          <Select
-            value={graphFilter}
-            onValueChange={setGraphFilter}
-          >
-            <SelectTrigger className="h-9 w-[180px]">
-              <SelectValue placeholder="All Templates" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Templates</SelectItem>
-              {allGraphGroups.map((graph) => (
-                <SelectItem
-                  key={`${graph.deployment.id}:${graph.graphId}`}
-                  value={`${graph.deployment.id}:${graph.graphId}`} // Use combined ID for value
-                >
-                  <span className="text-muted-foreground">
-                    [{graph.deployment.name}]
-                  </span>
-                  {_.startCase(graph.graphId)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
       </div>
 
       <div className="flex items-center justify-between">
@@ -131,17 +86,6 @@ export function AgentDashboard() {
           {filteredAgents.length}{" "}
           {filteredAgents.length === 1 ? "Agent" : "Agents"}
         </h2>
-        {/* <Select defaultValue="newest">
-          <SelectTrigger className="h-8 w-[180px]">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="newest">Newest First</SelectItem>
-            <SelectItem value="oldest">Oldest First</SelectItem>
-            <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-            <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-          </SelectContent>
-        </Select> */}
       </div>
 
       {filteredAgents.length === 0 ? (
@@ -161,7 +105,7 @@ export function AgentDashboard() {
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredAgents.map((agent) => (
-            <AgentCard
+            <TaskAgentCard
               key={`agent-dashboard-${agent.assistant_id}`}
               agent={agent}
               showDeployment={true}

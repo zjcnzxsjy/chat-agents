@@ -21,11 +21,11 @@ const data = {
       url: "/",
       icon: MessageCircle,
     },
-    {
-      title: "Voice",
-      url: "/voice",
-      icon: AudioLines,
-    },
+    // {
+    //   title: "Voice",
+    //   url: "/voice",
+    //   icon: AudioLines,
+    // },
     {
       title: "Agents",
       url: "/agents",
