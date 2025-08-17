@@ -8,7 +8,8 @@
     "agent_supervisor": "./apps/agents/src/agent-supervisor/graph.ts:graph",
     "audio_agent": "./apps/agents/src/audio-agent/graph.ts:graph",
     "deep_research_agent": "./apps/agents/src/deep-research-agent/graph.ts:graph",
-    "podcast_agent": "./apps/agents/src/podcast-agent/graph.ts:graph"
+    "podcast_agent": "./apps/agents/src/podcast-agent/graph.ts:graph",
+    "prompt_enhancer": "./apps/agents/src/prompt-enhancer/graph.ts:graph"
   },
   "env": ".env"
 }
